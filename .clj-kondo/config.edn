@@ -1,0 +1,3 @@
+{:linters
+ {:unresolved-symbol {:exclude [(asvs.utils/e>)
+                                (asvs.utils/dispatch>e)]}}}

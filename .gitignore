@@ -1,0 +1,9 @@
+.calva/*
+!.calva/settings.json
+.clj-kondo/*
+!.clj-kondo/config.edn
+.cpcache
+.lsp
+.shadow-cljs
+node_modules
+cljs-runtime

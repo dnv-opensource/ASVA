@@ -1,0 +1,449 @@
+/*
+ * Typography
+ */
+
+@font-face {
+  font-family: 'DNV';
+  src: url('/fonts/DNV-Regular.woff2') format('woff2');
+  font-weight: normal;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'Roboto';
+  src: url('/fonts/Roboto-Regular.ttf') format('ttf');
+  font-weight: normal;
+  font-style: normal;
+}
+
+.DNV {
+    font-family: DNV;
+}
+
+:root {
+    font-size: 62.5%;
+}
+
+body {
+    font-size: 1.6em;
+}
+
+body,
+input,
+button,
+fieldset,
+textarea {
+    font-family: Roboto, Arial, Helvetica, sans-serif;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+p {
+    max-width: 50em;
+    font-weight: 100;
+}
+
+h1 {
+    padding-top: 2em;
+    line-height: 100%;
+}
+h2,
+h3,
+h4,
+h5,
+p {
+    line-height: 140%;
+}
+
+:root {
+    --dark: 3%;
+    --dim: 18%;
+    --medium: 41%;
+    --medium-light: 77%;
+    --light: 90%;
+    --very-light: 97%;
+
+    --blue-hs: 223, 67%;
+    --sandstone-hs: 0, 7%;
+    --sea-blue-hs: 218, 100%;
+    --sky-blue-hs: 196, 75%;
+    --earth-hs: 38, 50%;
+    --land-green-hs: 114, 49%;
+    --digi-green-hs: 139, 100%;
+    --white-hs: 0, 0%;
+    --black-hs: 0, 0%;
+
+    --blue-hsl: var(--blue-hs), var(--dim);
+    --sky-blue-hsl: var(--sky-blue-hs), var(--medium-light);
+    --sea-blue-hsl: var(--sea-blue-hs), var(--dim);
+    --land-green-hsl: var(--land-green-hs), var(--medium);
+    --digi-green-hsl: var(--digi-green-hs), var(--medium-light);
+    --dark-blue-hsl: var(--blue-hs), var(--dark);
+    --warning-hsl: 357, 68%, 46%;
+    --background-hsl: var(--sandstone-hs), var(--very-light);
+    --background-hsl-2: var(--white-hs), 99%;
+    --background-hsl-3: var(--white-hs), 99.5%;
+    --background-hsl-4: var(--white-hs), 100%;
+    --foreground-hsl: var(--sandstone-hs), var(--dim);
+
+    --risk-yellow-color: hsl(48, 100%, 50%);
+    --risk-orange-color: hsl(34, 100%, 46%);
+
+    --blue-color: hsl(var(--blue-hsl));
+    --sky-blue-color: hsl(var(--sky-blue-hsl));
+    --sea-blue-color: hsl(var(--sea-blue-hsl));
+    --land-green-color: hsl(var(--land-green-hsl));
+    --digi-green-color: hsl(var(--digi-green-hsl));
+    --dark-blue-color: hsl(var(--blue-hsl));
+    --warning-color: hsl(var(--warning-hsl));
+
+    --sandstone-color: hsl(var(--sandstone-hs), var(--light));
+
+    --border-radius: 1em;
+    --toolbar-size: 64px;
+    --snappy: cubic-bezier(0.860, 0.000, 0.070, 1.000);
+
+    --header-size: 40vh;
+    scroll-behavior: smooth;
+}
+
+/*
+ * Light Theme
+ */
+
+ :root {
+    --background-color: hsl(var(--background-hsl));
+    --background-color-2: hsl(var(--background-hsl-2));
+    --background-color-3: hsl(var(--background-hsl-3));
+    --background-color-4: hsl(var(--background-hsl-4));
+    --foreground-color: hsl(var(--foreground-hsl));
+ 
+    --primary-color: var(--blue-color);
+ 
+    --box-shadow:
+        1px 2px 2px hsla(var(--sandstone-hs), 70%, 0.2),
+        2px 4px 4px hsla(var(--sandstone-hs), 70%, 0.2);
+    --box-shadow-2:
+        1px 2px 2px hsla(var(--sandstone-hs), 70%, 0.333),
+        2px 4px 4px hsla(var(--sandstone-hs), 70%, 0.333),
+        3px 6px 6px hsla(var(--sandstone-hs), 70%, 0.333);
+    --box-shadow-3:
+          1px 2px 2px hsla(var(--sandstone-hs), 70%, 0.4),
+          2px 4px 4px hsla(var(--sandstone-hs), 70%, 0.4),
+          3px 6px 6px hsla(var(--sandstone-hs), 70%, 0.4),
+          4px 8px 8px hsla(var(--sandstone-hs), 70%, 0.4);
+ }
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    background: hsl(0, 0%, 98%);
+    color: hsl(0, 0%, 3%);
+}
+
+h1 span,
+h3 span {
+    color: hsl(0, 0%, 70%);
+}
+
+body,
+ol {
+    margin: 0;
+}
+
+::selection,
+mark {
+    background: var(--risk-yellow-color);
+}
+
+/*
+ * Components
+ */
+
+.Icon.small svg {
+    height: 18px;
+    width: 18px;
+}
+
+.Progress-indicator .inactive {
+    stroke: hsla(var(--sky-blue-hsl), 0.2);
+}
+.Progress-indicator .active {
+    stroke: hsl(var(--sky-blue-hsl));
+    transition: .6s var(--snappy);
+}
+
+.Owasp {
+    background: white;
+    border-radius: 0.5em;
+    position: sticky;
+    max-width: 15em;
+    overflow: hidden;
+    padding: 2em;
+    top: 3em;
+    left: 3em;
+    z-index: 3;
+}
+.Owasp ol {
+    display: flex;
+    flex-direction: column;
+    gap: 1em;
+    list-style: none;
+}
+
+.Switch {
+    --knob-size: 2rem;
+    appearance: none;
+    background: hsla(var(--sandstone-hs), var(--dim), 0.3);
+    box-sizing: content-box;
+    border-radius: var(--border-radius);
+    min-width: calc(var(--knob-size) * 1.75);
+    height: var(--knob-size);
+    padding: 0.2rem;
+    vertical-align: middle;
+    position: relative;
+}
+    .Switch:focus {
+        outline-color: var(--blue-color);
+    }
+    .Switch::after {
+        display: block;
+        background: white;
+        border-radius: 50%;
+        box-shadow: var(--box-shadow);
+        content: " ";
+        position: absolute;
+        height: var(--knob-size);
+        width: var(--knob-size);
+        transition: .2s cubic-bezier(0.860, 0.000, 0.070, 1.000);
+        transform: translateX(0);
+    }
+    .Switch:checked {
+        background: var(--land-green-color);
+    }
+    .Switch:checked::after {
+        transform: translateX(75%);
+    }
+
+.Checkbox {
+    --size: 1.2em;
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
+}
+    .Checkbox .check {
+        color: white;
+        position: absolute;
+        z-index: 2;
+        pointer-events: none;
+        opacity: 0;
+        transition: .2s ease;
+    }
+    .Checkbox .check > svg {
+        height: calc(var(--size) - 0.4em);
+    }
+    .Checkbox input[type=checkbox] {
+        appearance: none;
+        background: hsl(var(--blue-hs), 87%);
+        border: 1px solid hsl(var(--blue-hs), 80%);
+        border-radius: 0.3em;
+        height: var(--size);
+        width: var(--size);
+        transition: .2s ease;
+        z-index: 1;
+    }
+    .Checkbox.disabled {
+        color: hsl(var(--sandstone-hs), 80%);
+    }
+    .Checkbox input[type=checkbox]:disabled {
+        border: 1px solid hsl(var(--sandstone-hs), 80%);
+    }
+    .Checkbox input[type=checkbox]:checked {
+        background: hsl(var(--blue-hs), var(--medium));
+        border-color: hsl(var(--blue-hs), var(--medium));
+    }
+    .Checkbox:hover input[type=checkbox]:not(:disabled):not(:checked) {
+        background: hsl(var(--blue-hs), 95%);
+    }
+    .Checkbox input[type=checkbox]:checked + .check {
+        opacity: 1;
+    }
+
+/*
+ * Sections
+ */
+
+header {
+    background: hsl(var(--blue-hs), var(--dim));
+    display: flex;
+    color: white;
+    padding: 5em;
+    place-content: center;
+    width: 100%;
+    z-index: 3;
+    position: relative;
+}
+header > div {
+    display: flex;
+    flex-direction: row;
+    max-width: 120rem;
+    margin: 0 auto;
+    gap: 4em;
+}
+header p {
+    line-height: 200%;
+}
+header .Progress-indicator .inactive {
+    stroke: hsla(var(--digi-green-hsl), 0.2);
+}
+header .Progress-indicator .active {
+    stroke: var(--digi-green-color);
+}
+header a {
+    background: hsla(var(--blue-hs), var(--medium), 0.5);
+    border-radius: 0.25em;
+    color: white;
+    text-decoration: none;
+    padding: 0.25em 0.5em;
+    transition: .2s ease;
+}
+header a:hover {
+    background: hsl(var(--blue-hs), var(--medium));
+}
+@media screen and (max-width: 1280px) {
+    header > div {
+        flex-direction: column;
+    }
+}
+
+.Search {
+    background: hsl(var(--blue-hs), var(--dim));
+    border-radius: calc((var(--border-radius) * 0.5) + 0.5em);
+    box-shadow: var(--box-shadow-2);
+    color: white;
+    position: sticky;
+    display: flex;
+    flex-direction: column;
+    max-width: 80rem;
+    margin: 1em auto;
+    padding: 0.5em;
+    top: 1em;
+    z-index: 3;
+}
+.Search input[type=search] {
+    border-radius: calc(var(--border-radius) * 0.5);
+    border: none;
+    font-size: 1.5em;
+    padding: 0.5em 1em;
+    outline: none;
+}
+.Search input[type=search]:focus {
+    outline: 5px solid hsl(var(--sea-blue-hs), var(--medium));
+}
+.Search footer {
+    display: flex;
+    flex-direction: row;
+    gap: 2em;
+    padding: 1em;
+}
+
+
+
+
+.Table-of-contents {
+    background: white;
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    top: 40vh;
+    left: 0;
+    position: fixed;
+    margin: 2em;
+    padding: 2em;
+    width: fit-content;
+    transform: translateY(-50%);
+    z-index: 3;
+}
+.Table-of-contents ol {
+    display: flex;
+    flex-direction: column;
+    gap: 1em;
+    margin: 0;
+    padding-left: 1em;
+}
+
+@media screen and (max-width: 1280px) {
+    .Table-of-contents {
+        display: none;
+    }
+}
+
+.Assessments {
+    font-size: 1.25em;
+}
+.Assessments ol {
+    margin: 0 auto;
+    max-width: 80rem;
+}
+    .Assessment {
+        display: flex;
+        flex-direction: column;
+        margin-top: 3em;
+        position: relative;
+        gap: 1em;
+        align-items: flex-start;
+    }
+    .Assessment .item {
+        display: flex;
+        font-variant: tabular-nums;
+        align-items: center;
+    }
+    .Assessment .item:hover a {
+        opacity: 1;
+    }
+    .Assessment .item a {
+        padding-left: 0.25em;
+        padding-top: 0.1em;
+        transition: .2s ease;
+        opacity: 0.2;
+    }
+    .Assessment .Progress-indicator {
+        position: absolute;
+        top: 0;
+        left: 0;
+        transform: translateX(-200%);
+        z-index: 1;
+    }
+    .Assessment .comment {
+        background: white;
+        border: solid 1px hsl(var(--sandstone-hs), var(--light));
+        border-radius: 0.5em;
+        padding: 1em;
+        font-size: small;
+    }
+
+
+.fade {
+    backdrop-filter: blur(3rem);
+    mask: linear-gradient(to bottom,
+            hsla(0, 0%, 98%, 1) 40%,
+            hsla(0, 0%, 98%, 0));
+    position: fixed;
+    height: 13em;
+    width: 100vw;
+    z-index: 2;
+    top: 0;
+    pointer-events: none;
+}
+.badge {
+    background: var(--warning-color);
+    border-radius: calc(var(--border-radius) * 0.25);
+    color: white;
+    font-size: small;
+    display: inline-block;
+    text-decoration: none;
+    padding: 0.2em 0.4em;
+}
