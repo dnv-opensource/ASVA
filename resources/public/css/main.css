@@ -287,9 +287,14 @@ header {
     z-index: 3;
     position: relative;
 }
+header h1 {
+    margin-top: 0;
+    padding-top: 0;
+}
 header > div {
     display: flex;
     flex-direction: row;
+    place-items: center;
     max-width: 120rem;
     margin: 0 auto;
     gap: 4em;
@@ -350,7 +355,13 @@ header a:hover {
     gap: 2em;
     padding: 1em;
 }
-
+@media screen and (max-width: 1280px) {
+    .Search {
+        top: 0;
+        margin: 0;
+        border-radius: 0;
+    }
+}
 
 
 

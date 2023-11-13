@@ -89,8 +89,8 @@
 
 (defn query-filter [query {:keys [description comment evidence]}]
   (if (not-empty query)
-    (or (some #(match-string query %) comment)
-        (some #(match-string query %) evidence)
+    (or (some (partial match-string query) comment)
+        (some (partial match-string query) evidence)
         (match-string query description))
     true))
 
@@ -156,8 +156,9 @@
     [:section.Assessments
      [:div.fade]
      [:ol
-      (for [[n assessments] grouped-assessments]
-        (let [section (get section-names n)]
-          (into [:li {:key (slug :assessment n) :id n}
-                 [:h1.DNV (t section)]]
-                (map assessment assessments))))]]))
+      (doall
+       (for [[n assessments] grouped-assessments]
+         (let [section (get section-names n)]
+           (into [:li {:key (slug :assessment n) :id n}
+                  [:h1.DNV (t section)]]
+                 (map assessment assessments)))))]]))
