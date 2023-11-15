@@ -142,7 +142,7 @@ p {
 
 body {
     background: hsl(0, 0%, 98%);
-    color: hsl(0, 0%, 3%);
+    color: hsl(0, 0%, 15%);
 }
 
 h1 span,
@@ -168,6 +168,10 @@ mark {
     height: 18px;
     width: 18px;
 }
+.Icon.large svg {
+    height: 128px;
+    width: 128px;
+}
 
 .Progress-indicator .inactive {
     stroke: hsla(var(--sky-blue-hsl), 0.2);
@@ -175,6 +179,17 @@ mark {
 .Progress-indicator .active {
     stroke: hsl(var(--sky-blue-hsl));
     transition: .6s var(--snappy);
+}
+
+.Upload {
+    display: flex;
+    flex-direction: column;
+    gap: 1em;
+    height: 100vh;
+    width: 100vw;
+    place-content: center;
+    place-items: center;
+    text-align: center;
 }
 
 .Owasp {
@@ -194,40 +209,6 @@ mark {
     gap: 1em;
     list-style: none;
 }
-
-.Switch {
-    --knob-size: 2rem;
-    appearance: none;
-    background: hsla(var(--sandstone-hs), var(--dim), 0.3);
-    box-sizing: content-box;
-    border-radius: var(--border-radius);
-    min-width: calc(var(--knob-size) * 1.75);
-    height: var(--knob-size);
-    padding: 0.2rem;
-    vertical-align: middle;
-    position: relative;
-}
-    .Switch:focus {
-        outline-color: var(--blue-color);
-    }
-    .Switch::after {
-        display: block;
-        background: white;
-        border-radius: 50%;
-        box-shadow: var(--box-shadow);
-        content: " ";
-        position: absolute;
-        height: var(--knob-size);
-        width: var(--knob-size);
-        transition: .2s cubic-bezier(0.860, 0.000, 0.070, 1.000);
-        transform: translateX(0);
-    }
-    .Switch:checked {
-        background: var(--land-green-color);
-    }
-    .Switch:checked::after {
-        transform: translateX(75%);
-    }
 
 .Checkbox {
     --size: 1.2em;
@@ -359,7 +340,9 @@ header a:hover {
     .Search {
         top: 0;
         margin: 0;
+        padding: 1em;
         border-radius: 0;
+        max-width: 100%;
     }
 }
 
@@ -386,7 +369,7 @@ header a:hover {
     padding-left: 1em;
 }
 
-@media screen and (max-width: 1280px) {
+@media screen and (max-width: 1520px) {
     .Table-of-contents {
         display: none;
     }
@@ -398,6 +381,9 @@ header a:hover {
 .Assessments ol {
     margin: 0 auto;
     max-width: 80rem;
+}
+.Assessments li {
+    scroll-margin-top: 6em;
 }
     .Assessment {
         display: flex;

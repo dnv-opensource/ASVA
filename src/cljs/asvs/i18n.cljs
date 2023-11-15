@@ -34,6 +34,7 @@
     :date-time (tongue/inst-formatter "{month-short} {day}, {year} {hour24}:{minutes-padded}" inst-strings-en)
     :12-hour (tongue/inst-formatter "{hour12}" inst-strings-en)
     :two-decimals (fn [num] (format-number-en (round-to-decimals num 2)))
+    :percent (fn [num] (str (format-number-en (round-to-decimals num 2)) "%"))
 
     :main-title  "Welcome to Our ASVA Assessment Page"
     :preface-1 "Our mission is to integrate robust security practices into our simulation technology services. This assessment, aligned with "
@@ -41,6 +42,9 @@
     :preface-2 ", ensures our applications are secure and resilient. We leverage resources like the "
     :preface-link-2 "OWASP Top Ten Proactive Controls"
     :preface-3 " to guide our approach, fostering a culture of security and awareness. Your expertise and collaboration in this process are key to maintaining our commitment to security excellence."
+
+    :file-upload-info "Drag & drop or click to choose file to upload"
+    :file-upload "ASVS JSON (.json, Max: 1 MB)"
 
     :search "Search..."
     :copy-location "Copy location of anchor to your clipboard"
@@ -70,6 +74,9 @@
     :preface-2 ", sikrer at våre applikasjoner er sikre og motstandsdyktige. Vi benytter ressurser som "
     :preface-link-2 "OWASPs topp ti proaktive kontroller"
     :preface-3 " for å lede vår tilnærming, og fremmer en kultur for sikkerhet og bevissthet. Din ekspertise og samarbeid i denne prosessen er nøkkelen til å opprettholde vårt engasjement for sikkerhetseksellens."
+
+    :file-upload-info "Dra & slipp eller klikk for å velge fil for opplasting"
+    :file-upload "ASVS JSON (.json, Maks: 1 MB)"
 
     :search "Søk..."
     :copy-location "Kopier plassering av anker til utklippstavlen din"
@@ -103,6 +110,8 @@
     :search "Zoeken..."
     :copy-location "Kopieer de locatie van de anker naar uw klembord"
     :level "Niveau {1}"
+    :file-upload-info "Sleep & zet neer of klik om bestand te kiezen om te uploaden"
+    :file-upload "ASVS JSON (.json, Max: 1 MB)"
     :not-applicable "Niet van toepassing"
     :completed "Voltooid"
     :architecture "Architectuur"
@@ -130,6 +139,8 @@
     :search "Pesquisar..."
     :copy-location "Copie a localização da âncora para sua área de transferência"
     :level "Nível {1}"
+    :file-upload-info "Arraste e solte ou clique para escolher o arquivo para upload"
+    :file-upload "ASVS JSON (.json, Máx: 1 MB)"
     :not-applicable "Não aplicável"
     :completed "Concluído"
     :architecture "Arquitetura"
@@ -158,6 +169,8 @@
     :copy-location "Copiar la ubicación del ancla a su portapapeles"
     :level "Nivel {1}"
     :not-applicable "No aplicable"
+    :file-upload-info "Arrastra y suelta o haz clic para elegir el archivo a subir"
+    :file-upload "ASVS JSON (.json, Máx: 1 MB)"
     :completed "Completado"
     :architecture "Arquitectura"
     :authentication "Autenticación"
@@ -183,6 +196,8 @@
     :preface-3 "와 같은 자원을 활용하여 접근 방식을 안내하고, 보안과 인식의 문화를 조성합니다. 이 과정에서의 귀하의 전문 지식과 협력은 우리의 보안 우수성에 대한 약속을 유지하는 데 중요합니다."
     :search "검색..."
     :copy-location "앵커의 위치를 클립보드에 복사"
+    :file-upload-info "드래그 & 드롭 또는 업로드할 파일을 선택하려면 클릭하세요"
+    :file-upload "ASVS JSON (.json, 최대: 1 MB)"
     :level "수준 {1}"
     :not-applicable "해당 없음"
     :completed "완료됨"
@@ -207,5 +222,5 @@
   (tongue/build-translate dicts))
 
 (defn t [& args]
-  (let [[dialect country-code] (-> js/navigator .-language (str/split "-"))]
+  (let [[dialect _] (-> js/navigator .-language (str/split "-"))]
     (apply translate (-> dialect str/lower-case keyword) args)))

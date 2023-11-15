@@ -5,9 +5,6 @@
   #?(:cljs (:require-macros [asvs.utils]))
   #?(:clj (:refer-clojure :exclude [slurp])))
 
-(defmacro slurp [file]
-  (clojure.core/slurp file))
-
 (defn assoc-event-db
   "Associates a value into the given re-frame app-db at a specified path.
   
@@ -22,21 +19,6 @@
   If `db` is {:a {:b {:c 0}}}, and `args` is [:a :b :c 1], 
   the resulting db will be {:a {:b {:c 1}}}."
   [db args] (assoc-in db (pop args) (peek args)))
-
-(defmacro <>
-  "Generates re-frame event and subscription handlers for each keyword in the given vector.
-
-   The generated event handlers use `assoc-event-db` for updating the re-frame app-db.
-   The generated subscription handlers use `get-in` to fetch the state based on the keyword.
-
-   Usage:
-   (<> [:key1 :key2 :key3])"
-  [keywords]
-  `(do
-     ~@(mapcat (fn [k]
-                 `[(re-frame/reg-event-db ~k assoc-event-db)
-                   (re-frame/reg-sub ~k get-in)])
-               keywords)))
 
 (defn ->params
   "Normalize arguments to always have the form [props children] like
@@ -73,6 +55,26 @@
      "Takes a re-frame subscription vector `sub` and returns its
        current value."
      [sub] (deref (re-frame/subscribe sub))))
+
+#?(:clj
+   (defmacro <>
+     "Generates re-frame event and subscription handlers for each keyword in the given vector.
+
+   The generated event handlers use `assoc-event-db` for updating the re-frame app-db.
+   The generated subscription handlers use `get-in` to fetch the state based on the keyword.
+
+   Usage:
+   (<> [:key1 :key2 :key3])"
+     [keywords]
+     `(do
+        ~@(mapcat (fn [k]
+                    `[(re-frame/reg-event-db ~k assoc-event-db)
+                      (re-frame/reg-sub ~k get-in)])
+                  keywords))))
+
+#?(:clj
+   (defmacro slurp [file]
+     (clojure.core/slurp file)))
 
 #?(:clj
    (defmacro e>

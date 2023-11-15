@@ -3,28 +3,12 @@
    [asvs.components :refer [highlight progress-indicator]]
    [asvs.i18n :refer [t]]
    [asvs.icons :as icons]
-   [asvs.utils :refer [<> <sub e> slug slurp]]
-   [cljs-bean.core :refer [->clj]]
+   [asvs.utils :refer [<> e> slug]]
    [clojure.string :as str]
    [re-frame.alpha :as re-frame]))
 
 (defn parse-int [key]
   (js/parseInt (re-find #"\d+" key)))
-
-(defn camel-case-to-kebab-case [s]
-  (if (->> s
-           (re-seq #"[A-Z]")
-           (apply str)
-           (= s))
-    (clojure.string/lower-case s)
-    (->> s
-         (re-seq #"[A-Z][^A-Z]*")
-         (map clojure.string/lower-case)
-         (clojure.string/join "-"))))
-
-
-(defn translate-keys [m]
-  (into {} (map (fn [[k v]] [(keyword (camel-case-to-kebab-case (name k))) v]) m)))
 
 (defonce section-names
   {1 :architecture
@@ -42,33 +26,6 @@
    13 :api
    14 :config})
 
-;; TODO Replace hard-coded filepath
-;;    | We could use a file-input and the FileReader API. That way this could be
-;;    | open-sourced and immediately usefull to others.
-;;    | Could also hand the path to the app on boot or create a thin back-end.
-(defonce assessment-data
-  (->>  (-> (slurp "resources/ASVS-4.0.3.json")
-            (str/replace #"[^A-Za-z0-9-# /\"'\.\\,_\{\}\[\]:]" "")
-            (str/replace #"[ ]{1,}" " ")
-            js/JSON.parse
-            ->clj)
-        (map translate-keys)
-        (map (fn [itm]
-               (some-> itm
-                       (update :l1 (partial = "X"))
-                       (update :l2 (partial = "X"))
-                       (update :l3 (partial = "X")))))))
-
-(re-frame/reg-event-db
- ::initialize
- (fn [_ _]
-   {::assessments assessment-data
-    ::level-1 true
-    ::level-2 true
-    ::level-3 true
-    ::not-applicable? false
-    ::completed? true}))
-
 (<> [::assessments
      ::level-1
      ::level-2
@@ -77,7 +34,23 @@
      ::completed?
      ::query])
 
-(re-frame/reg-sub ::filtered-assessments get-in)
+(re-frame/reg-event-fx
+ ::initialize
+ [(re-frame/inject-cofx :local-storage)]
+ (fn [{:keys [db local-storage]} _]
+   {:db (merge db
+               {::assessments (get local-storage ::assessments [])
+                ::level-1 true
+                ::level-2 true
+                ::level-3 true
+                ::not-applicable? false
+                ::completed? true})}))
+
+(re-frame/reg-event-fx
+ ::assessments
+ (fn [{:keys [db]} [k v]]
+   {:db (assoc db k v)
+    :local-storage [k v]}))
 
 (defn match-string [query item]
   (str/includes? (str/lower-case (or item " ")) (str/lower-case query)))
@@ -110,6 +83,7 @@
                                    (filter #(query-filter query %)))]
               (sequence transducer assessments)))
   :path   [::filtered-assessments]})
+(re-frame/reg-sub ::filtered-assessments get-in)
 
 (re-frame/reg-sub
  ::progress
@@ -151,14 +125,13 @@
      (into [:div.comments] (map comment-view comment))
      [progress-indicator {:width 40} (* current-maturity 100)]]))
 
-(defn view []
-  (let [grouped-assessments (<sub [::grouped-assessments])]
-    [:section.Assessments
-     [:div.fade]
-     [:ol
-      (doall
-       (for [[n assessments] grouped-assessments]
-         (let [section (get section-names n)]
-           (into [:li {:key (slug :assessment n) :id n}
-                  [:h1.DNV (t section)]]
-                 (map assessment assessments)))))]]))
+(defn view [grouped-assessments]
+  [:section.Assessments
+   [:div.fade]
+   [:ol
+    (doall
+     (for [[n assessments] grouped-assessments]
+       (let [section (get section-names n)]
+         (into [:li {:key (slug :assessment n) :id n}
+                [:h1.DNV (t section)]]
+               (map assessment assessments)))))]])

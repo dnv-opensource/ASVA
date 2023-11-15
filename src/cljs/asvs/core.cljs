@@ -1,12 +1,17 @@
 (ns asvs.core
-  (:require [asvs.assessments :as assessments]
-            [asvs.components :refer [checkbox progress-indicator]]
-            [asvs.i18n :refer [t]]
-            [asvs.utils :refer [<sub dispatch>e e> slug]]
-            [goog.dom :as gdom]
-            [re-frame.alpha :as re-frame]
-            [reagent.core :as reagent]
-            [reagent.dom.client :refer [create-root]]))
+  (:require
+   [asvs.assessments :as assessments]
+   [asvs.components :refer [checkbox progress-indicator upload-boundary]]
+   [asvs.i18n :refer [t]]
+   [asvs.icons :as icons]
+   [asvs.utils :refer [<sub dispatch>e e> slug]]
+   [cljs-bean.core :refer [->clj]]
+   [clojure.string :as str]
+   [goog.dom :as gdom]
+   [re-frame.alpha :as re-frame]
+   [reagent.core :as reagent]
+   [reagent.dom.client :refer [create-root]]
+   [asvs.store]))
 
 (defonce root
   (create-root (gdom/getElement "app")))
@@ -47,16 +52,55 @@
                           (set! (.-hash js/location) n))}
         (t section)]])]])
 
+(defn read-file [file]
+  (let [->kebab (fn [s]
+                  (if (->> s
+                           (re-seq #"[A-Z]")
+                           (apply str)
+                           (= s))
+                    (clojure.string/lower-case s)
+                    (->> s
+                         (re-seq #"[A-Z][^A-Z]*")
+                         (map clojure.string/lower-case)
+                         (clojure.string/join "-"))))
+        translate-keys (fn [m]
+                         (into {} (map (fn [[k v]] [(keyword (->kebab (name k))) v]) m)))
+        ->asvs (fn [raw-file]
+                 (->> (-> raw-file
+                          (str/replace #"[^A-Za-z0-9-# /\"'\.\\,_\{\}\[\]:]" "")
+                          (str/replace #"[ ]{1,}" " ")
+                          js/JSON.parse
+                          ->clj)
+                      (map translate-keys)
+                      (map (fn [itm]
+                             (some-> itm
+                                     (update :l1 (partial = "X"))
+                                     (update :l2 (partial = "X"))
+                                     (update :l3 (partial = "X")))))))
+        reader (js/FileReader.)]
+    (set! (.-onload reader) (dispatch>e [::assessments/assessments (->asvs (.-result target))]))
+    (set! (.-onerror reader) (fn [_] (println "Error reading file")))
+    (.readAsText reader file)))
+
 (defn app []
-  (let [progress (<sub [::assessments/progress])]
+  (let [progress (<sub [::assessments/progress])
+        grouped-assessments (<sub [::assessments/grouped-assessments])]
     [:main
-     [:header
-      [:div
-       [progress-indicator {:width 256} (* progress 100)]
-       [introduction]]]
-     [search]
-     [table-of-contents]
-     [assessments/view]]))
+     (if (seq grouped-assessments)
+       [:<>
+        [:header
+         [:div
+          [progress-indicator {:width 256} (* progress 100)]
+          [introduction]]]
+        [search]
+        [table-of-contents]
+        [assessments/view grouped-assessments]]
+       [upload-boundary {:accept [".json"]
+                         :accept-types #{"application/json"}
+                         :on-upload #(read-file (first %))}
+        [icons/cloud-upload {:class [:large]}]
+        [:strong (t :file-upload-info)]
+        [:small (t :file-upload)]])]))
 
 (defn ^:dev/after-load main []
   (-> root (.render (reagent/as-element [app]))))
