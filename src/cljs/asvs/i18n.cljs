@@ -37,7 +37,7 @@
     :percent (fn [num] (str (format-number-en (round-to-decimals num 2)) "%"))
 
     :main-title  "Welcome to Our ASVA Assessment Page"
-    :preface-1 "Our mission is to integrate robust security practices into our simulation technology services. This assessment, aligned with "
+    :preface-1 "Our mission is to integrate robust security practices into our services. This assessment, aligned with "
     :preface-link-1 "OWASP's ASVA guidelines"
     :preface-2 ", ensures our applications are secure and resilient. We leverage resources like the "
     :preface-link-2 "OWASP Top Ten Proactive Controls"
@@ -65,11 +65,14 @@
     :business-logic "Business logic"
     :files-resources "Files & resources"
     :api "API"
-    :config "Config"}
+    :config "Config"
+
+    :failed-parsing "Error parsing the ASVS file. Ensure the file is in correct JSON format and check for syntax errors."
+    :failed-reading "Error reading the ASVS file. Check if the file exists, is accessible, and is in JSON format."}
 
    :nb
    {:main-title "Velkommen til vår ASVA-vurderingsside"
-    :preface-1 "Vår misjon er å integrere robuste sikkerhetspraksiser i våre simuleringsteknologitjenester. Denne vurderingen, i tråd med "
+    :preface-1 "Vår misjon er å integrere robuste sikkerhetspraksiser i våre tjenester. Denne vurderingen, i tråd med "
     :preface-link-1 "OWASPs ASVA-retningslinjer"
     :preface-2 ", sikrer at våre applikasjoner er sikre og motstandsdyktige. Vi benytter ressurser som "
     :preface-link-2 "OWASPs topp ti proaktive kontroller"
@@ -77,6 +80,9 @@
 
     :file-upload-info "Dra & slipp eller klikk for å velge fil for opplasting"
     :file-upload "ASVS JSON (.json, Maks: 1 MB)"
+
+    :failed-parsing "Feil ved parsing av ASVS-filen. Sørg for at filen er i korrekt JSON-format og sjekk for syntaksfeil."
+    :failed-reading "Feil ved lesing av ASVS-filen. Kontroller at filen eksisterer, er tilgjengelig, og er i JSON-format."
 
     :search "Søk..."
     :copy-location "Kopier plassering av anker til utklippstavlen din"
@@ -102,7 +108,7 @@
 
    :nl
    {:main-title "Welkom op onze ASVA-beoordelingspagina"
-    :preface-1 "Onze missie is om robuuste beveiligingspraktijken te integreren in onze simulatietechnologieservices. Deze beoordeling, in lijn met "
+    :preface-1 "Onze missie is om robuuste beveiligingspraktijken te integreren in onze services. Deze beoordeling, in lijn met "
     :preface-link-1 "OWASP's ASVA-richtlijnen"
     :preface-2 ", zorgt ervoor dat onze applicaties veilig en veerkrachtig zijn. We gebruiken bronnen zoals de "
     :preface-link-2 "OWASP Top Tien Proactieve Controles"
@@ -122,6 +128,8 @@
     :cryptography "Cryptografie"
     :error-logging "Foutenlogboek"
     :data-protection "Gegevensbescherming"
+    :failed-parsing "Fout bij het parsen van het ASVS-bestand. Zorg ervoor dat het bestand in het juiste JSON-formaat is en controleer op syntaxisfouten."
+    :failed-reading "Fout bij het lezen van het ASVS-bestand. Controleer of het bestand bestaat, toegankelijk is en in JSON-formaat is."
     :communications "Communicatie"
     :malicious "Kwaadaardig"
     :business-logic "Bedrijfslogica"
@@ -131,7 +139,7 @@
 
    :pt
    {:main-title "Bem-vindo à nossa Página de Avaliação ASVA"
-    :preface-1 "Nossa missão é integrar práticas de segurança robustas aos nossos serviços de tecnologia de simulação. Esta avaliação, alinhada com "
+    :preface-1 "Nossa missão é integrar práticas de segurança robustas aos nossos serviços. Esta avaliação, alinhada com "
     :preface-link-1 "as diretrizes da ASVA da OWASP"
     :preface-2 ", garante que nossas aplicações sejam seguras e resilientes. Utilizamos recursos como o "
     :preface-link-2 "OWASP Top Dez Controles Proativos"
@@ -142,6 +150,8 @@
     :file-upload-info "Arraste e solte ou clique para escolher o arquivo para upload"
     :file-upload "ASVS JSON (.json, Máx: 1 MB)"
     :not-applicable "Não aplicável"
+    :failed-parsing "Erro ao fazer o parse do arquivo ASVS. Certifique-se de que o arquivo está no formato JSON correto e verifique se há erros de sintaxe."
+    :failed-reading "Erro ao ler o arquivo ASVS. Verifique se o arquivo existe, está acessível e está em formato JSON."
     :completed "Concluído"
     :architecture "Arquitetura"
     :authentication "Autenticação"
@@ -160,7 +170,7 @@
 
    :es
    {:main-title "Bienvenido a nuestra página de evaluación ASVA"
-    :preface-1 "Nuestra misión es integrar prácticas de seguridad robustas en nuestros servicios de tecnología de simulación. Esta evaluación, alineada con "
+    :preface-1 "Nuestra misión es integrar prácticas de seguridad robustas en nuestros servicios. Esta evaluación, alineada con "
     :preface-link-1 "las pautas de ASVA de OWASP"
     :preface-2 ", asegura que nuestras aplicaciones sean seguras y resilientes. Utilizamos recursos como "
     :preface-link-2 "OWASP Top Ten Controles Proactivos"
@@ -176,6 +186,8 @@
     :authentication "Autenticación"
     :session-management "Gestión de sesiones"
     :access-control "Control de acceso"
+    :failed-parsing "Error al analizar el archivo ASVS. Asegúrate de que el archivo esté en el formato JSON correcto y revisa si hay errores de sintaxis."
+    :failed-reading "Error al leer el archivo ASVS. Comprueba si el archivo existe, está accesible y está en formato JSON."
     :validation-sanitization-encoding "Validación Saneamiento Codificación"
     :cryptography "Criptografía"
     :error-logging "Registro de errores"
@@ -189,7 +201,7 @@
 
    :ko
    {:main-title "우리 ASVA 평가 페이지에 오신 것을 환영합니다"
-    :preface-1 "우리의 사명은 시뮬레이션 기술 서비스에 강력한 보안 관행을 통합하는 것입니다. 이 평가는 "
+    :preface-1 "우리의 사명은 우리 서비스에 강력한 보안 관행을 통합하는 것입니다. 이 평가는"
     :preface-link-1 "OWASP의 ASVA 가이드라인"
     :preface-2 "에 부합하여, 우리의 애플리케이션이 안전하고 복원력이 있도록 보장합니다. 우리는 "
     :preface-link-2 "OWASP 상위 십 개의 적극적인 제어"
@@ -206,6 +218,8 @@
     :session-management "세션 관리"
     :access-control "접근 제어"
     :validation-sanitization-encoding "검증 살균 인코딩"
+    :failed-parsing "ASVS 파일 파싱 오류. 파일이 올바른 JSON 형식인지 확인하고 구문 오류를 확인하세요."
+    :failed-reading "ASVS 파일 읽기 오류. 파일이 존재하는지, 접근 가능한지, JSON 형식인지 확인하세요."
     :cryptography "암호화"
     :error-logging "오류 로깅"
     :data-protection "데이터 보호"

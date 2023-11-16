@@ -164,6 +164,49 @@ mark {
  * Components
  */
 
+.Notifications {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    pointer-events: none;
+    position: fixed;
+    gap: 1em;
+    top: 0;
+    bottom: 0;
+    margin: 0;
+    padding: 2em;
+    right: 0;
+    width: 25vw;
+    z-index: 4;
+}
+    .Notification {
+        --hsl: var(--sandstone-hs), var(--medium-light);
+        background: hsla(var(--hsl), 0.3);
+        color: hsl(var(--hsl));
+        border-radius: calc(var(--border-radius) * 0.5);
+        list-style: none;
+        padding: 1em 1.5em;
+        position: relative;
+    }
+    .Notification button {
+        appearance: none;
+        cursor: pointer;
+        pointer-events: visible;
+        background: transparent;
+        border: none;
+        position: absolute;
+        color: inherit;
+        right: 0.5em;
+        top: 50%;
+        transform: translateY(-45%);
+    }
+    .Notification.success {
+        --hsl: var(--land-green-hsl);
+    }
+    .Notification.error {
+        --hsl: var(--warning-hsl);
+    }
+
 .Icon.small svg {
     height: 18px;
     width: 18px;
@@ -359,7 +402,7 @@ header a:hover {
     padding: 2em;
     width: fit-content;
     transform: translateY(-50%);
-    z-index: 3;
+    z-index: 5;
 }
 .Table-of-contents ol {
     display: flex;

@@ -1,5 +1,6 @@
 (ns asvs.assessments
   (:require
+   [asvs.notifications :as notifications]
    [asvs.components :refer [highlight progress-indicator]]
    [asvs.i18n :refer [t]]
    [asvs.icons :as icons]

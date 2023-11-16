@@ -4,14 +4,15 @@
    [asvs.components :refer [checkbox progress-indicator upload-boundary]]
    [asvs.i18n :refer [t]]
    [asvs.icons :as icons]
+   [asvs.notifications :as notifications]
+   [asvs.store]
    [asvs.utils :refer [<sub dispatch>e e> slug]]
    [cljs-bean.core :refer [->clj]]
    [clojure.string :as str]
    [goog.dom :as gdom]
    [re-frame.alpha :as re-frame]
    [reagent.core :as reagent]
-   [reagent.dom.client :refer [create-root]]
-   [asvs.store]))
+   [reagent.dom.client :refer [create-root]]))
 
 (defonce root
   (create-root (gdom/getElement "app")))
@@ -66,20 +67,23 @@
         translate-keys (fn [m]
                          (into {} (map (fn [[k v]] [(keyword (->kebab (name k))) v]) m)))
         ->asvs (fn [raw-file]
-                 (->> (-> raw-file
-                          (str/replace #"[^A-Za-z0-9-# /\"'\.\\,_\{\}\[\]:]" "")
-                          (str/replace #"[ ]{1,}" " ")
-                          js/JSON.parse
-                          ->clj)
-                      (map translate-keys)
-                      (map (fn [itm]
-                             (some-> itm
-                                     (update :l1 (partial = "X"))
-                                     (update :l2 (partial = "X"))
-                                     (update :l3 (partial = "X")))))))
+                 (try
+                   (->> (-> raw-file
+                            (str/replace #"[^A-Za-z0-9-# /\"'\.\\,_\{\}\[\]:]" "")
+                            (str/replace #"[ ]{1,}" " ")
+                            js/JSON.parse
+                            ->clj)
+                        (map translate-keys)
+                        (map (fn [itm]
+                               (some-> itm
+                                       (update :l1 (partial = "X"))
+                                       (update :l2 (partial = "X"))
+                                       (update :l3 (partial = "X"))))))
+                   (catch js/Error _
+                     (re-frame/dispatch [::notifications/add (t :failed-parsing) :error 6000]))))
         reader (js/FileReader.)]
     (set! (.-onload reader) (dispatch>e [::assessments/assessments (->asvs (.-result target))]))
-    (set! (.-onerror reader) (fn [_] (println "Error reading file")))
+    (set! (.-onerror reader) (dispatch>e [::notifications/add (t :failed-reading) :error 6000]))
     (.readAsText reader file)))
 
 (defn app []
@@ -88,6 +92,7 @@
     [:main
      (if (seq grouped-assessments)
        [:<>
+        [notifications/view]
         [:header
          [:div
           [progress-indicator {:width 256} (* progress 100)]
@@ -107,4 +112,5 @@
 
 (defn ^:export init []
   (re-frame/dispatch-sync [::assessments/initialize])
+  (re-frame/dispatch-sync [::notifications/initialize])
   (main))

@@ -81,8 +81,3 @@
              [:div.Upload-message
               [:h1 (t :drop-to-upload)]])]
           body)))
-
-;; TODO Implement a notification-system
-(defn notification [& args]
-  (let [[params & body] (->params args)]
-    [:div.Notification params body]))
