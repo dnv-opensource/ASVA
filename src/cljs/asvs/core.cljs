@@ -88,9 +88,10 @@
 
 (defn app []
   (let [progress (<sub [::assessments/progress])
+        all-assessments (<sub [::assessments/assessments])
         grouped-assessments (<sub [::assessments/grouped-assessments])]
     [:main
-     (if (seq grouped-assessments)
+     (if (seq all-assessments)
        [:<>
         [notifications/view]
         [:header

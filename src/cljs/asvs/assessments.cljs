@@ -122,8 +122,11 @@
        [icons/link {:class [:small]}]]]
      [:p.description (highlight description @query)]
      (when (not (str/blank? cwe)) [:a.badge {:target :_blank :rel :noopener :href (cwe-url cwe)} cwe])
-     (into [:div.evidence] (map comment-view evidence))
-     (into [:div.comments] (map comment-view comment))
+     [:div.horizontal
+      (when (seq evidence)
+        [:div {:title (str/join "\n" evidence)} [icons/evidence]])
+      (when (seq comment)
+        [:div {:title (str/join "\n" comment)} [icons/comments {:class [:dot]}]])]
      [progress-indicator {:width 40} (* current-maturity 100)]]))
 
 (defn view [grouped-assessments]

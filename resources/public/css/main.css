@@ -35,6 +35,14 @@ textarea {
     font-family: Roboto, Arial, Helvetica, sans-serif;
 }
 
+button {
+    appearance: none;
+    cursor: pointer;
+    pointer-events: visible;
+    background: transparent;
+    border: none;
+}
+
 h1,
 h2,
 h3,
@@ -145,6 +153,24 @@ body {
     color: hsl(0, 0%, 15%);
 }
 
+img {
+    aspect-ratio: 1/1;
+    font-style: italic;
+    background-repeat: none;
+    background-size: cover;
+    background-position: center;
+    object-fit: cover;
+    object-position: center;
+    shape-margin: 1rem;
+    max-width: 100%;
+    height: auto;
+    vertical-align: middle;
+}
+
+a {
+    white-space: nowrap;
+}
+
 h1 span,
 h3 span {
     color: hsl(0, 0%, 70%);
@@ -158,6 +184,12 @@ ol {
 ::selection,
 mark {
     background: var(--risk-yellow-color);
+}
+
+.horizontal {
+    display: flex;
+    flex-direction: row;
+    gap: 1em;
 }
 
 /*
@@ -189,11 +221,6 @@ mark {
         position: relative;
     }
     .Notification button {
-        appearance: none;
-        cursor: pointer;
-        pointer-events: visible;
-        background: transparent;
-        border: none;
         position: absolute;
         color: inherit;
         right: 0.5em;
@@ -431,7 +458,7 @@ header a:hover {
     .Assessment {
         display: flex;
         flex-direction: column;
-        margin-top: 3em;
+        margin-top: 6em;
         position: relative;
         gap: 1em;
         align-items: flex-start;
@@ -457,12 +484,14 @@ header a:hover {
         transform: translateX(-200%);
         z-index: 1;
     }
-    .Assessment .comment {
-        background: white;
-        border: solid 1px hsl(var(--sandstone-hs), var(--light));
-        border-radius: 0.5em;
-        padding: 1em;
-        font-size: small;
+    .Assessment .card {
+        position: relative;
+    }
+    .card .evidence, .card .comments {
+        color: var(--sandstone-color);
+        position: absolute;
+        top: 2em;
+        right: 2em;
     }
 
 
@@ -486,4 +515,19 @@ header a:hover {
     display: inline-block;
     text-decoration: none;
     padding: 0.2em 0.4em;
+}
+
+.dot {
+    position: relative;
+}
+.dot::after {
+    content: " ";
+    background: var(--warning-color);
+    border-radius: calc(var(--border-radius) * 0.25);
+    display: block;
+    height: 0.3em;
+    width: 0.3em;
+    position: absolute;
+    right: 0em;
+    top: -.3em;
 }
