@@ -17,6 +17,61 @@
    :eras-short      ["BC" "AD"]
    :eras-long       ["Before Christ" "Anno Domini"]})
 
+(def ^:private inst-strings-pt
+  {:weekdays-narrow ["D" "S" "T" "Q" "Q" "S" "S"]
+   :weekdays-short  ["Dom" "Seg" "Ter" "Qua" "Qui" "Sex" "Sáb"]
+   :weekdays-long   ["Domingo" "Segunda-feira" "Terça-feira" "Quarta-feira" "Quinta-feira" "Sexta-feira" "Sábado"]
+   :months-narrow   ["J" "F" "M" "A" "M" "J" "J" "A" "S" "O" "N" "D"]
+   :months-short    ["Jan" "Fev" "Mar" "Abr" "Mai" "Jun" "Jul" "Ago" "Set" "Out" "Nov" "Dez"]
+   :months-long     ["Janeiro" "Fevereiro" "Março" "Abril" "Maio" "Junho" "Julho" "Agosto" "Setembro" "Outubro" "Novembro" "Dezembro"]
+   :dayperiods      ["AM" "PM"]
+   :eras-short      ["AC" "DC"]
+   :eras-long       ["Antes de Cristo" "Depois de Cristo"]})
+
+(def ^:private inst-strings-es
+  {:weekdays-narrow ["D" "L" "M" "M" "J" "V" "S"]
+   :weekdays-short  ["Dom" "Lun" "Mar" "Mié" "Jue" "Vie" "Sáb"]
+   :weekdays-long   ["Domingo" "Lunes" "Martes" "Miércoles" "Jueves" "Viernes" "Sábado"]
+   :months-narrow   ["E" "F" "M" "A" "M" "J" "J" "A" "S" "O" "N" "D"]
+   :months-short    ["Ene" "Feb" "Mar" "Abr" "May" "Jun" "Jul" "Ago" "Sep" "Oct" "Nov" "Dic"]
+   :months-long     ["Enero" "Febrero" "Marzo" "Abril" "Mayo" "Junio" "Julio" "Agosto" "Septiembre" "Octubre" "Noviembre" "Diciembre"]
+   :dayperiods      ["AM" "PM"]
+   :eras-short      ["AC" "DC"]
+   :eras-long       ["Antes de Cristo" "Después de Cristo"]})
+
+(def ^:private inst-strings-nl
+  {:weekdays-narrow ["Z" "M" "D" "W" "D" "V" "Z"]
+   :weekdays-short  ["Zon" "Maan" "Dins" "Woen" "Don" "Vrij" "Zat"]
+   :weekdays-long   ["Zondag" "Maandag" "Dinsdag" "Woensdag" "Donderdag" "Vrijdag" "Zaterdag"]
+   :months-narrow   ["J" "F" "M" "A" "M" "J" "J" "A" "S" "O" "N" "D"]
+   :months-short    ["Jan" "Feb" "Mrt" "Apr" "Mei" "Jun" "Jul" "Aug" "Sep" "Okt" "Nov" "Dec"]
+   :months-long     ["Januari" "Februari" "Maart" "April" "Mei" "Juni" "Juli" "Augustus" "September" "Oktober" "November" "December"]
+   :dayperiods      ["AM" "PM"]
+   :eras-short      ["v.Chr." "n.Chr."]
+   :eras-long       ["Voor Christus" "Na Christus"]})
+
+(def ^:private inst-strings-ko
+  {:weekdays-narrow ["일" "월" "화" "수" "목" "금" "토"]
+   :weekdays-short  ["일요일" "월요일" "화요일" "수요일" "목요일" "금요일" "토요일"]
+   :weekdays-long   ["일요일" "월요일" "화요일" "수요일" "목요일" "금요일" "토요일"]
+   :months-narrow   ["1" "2" "3" "4" "5" "6" "7" "8" "9" "10" "11" "12"]
+   :months-short    ["1월" "2월" "3월" "4월" "5월" "6월" "7월" "8월" "9월" "10월" "11월" "12월"]
+   :months-long     ["1월" "2월" "3월" "4월" "5월" "6월" "7월" "8월" "9월" "10월" "11월" "12월"]
+   :dayperiods      ["오전" "오후"]
+   :eras-short      ["기원전" "기원후"]
+   :eras-long       ["기원전" "기원후"]})
+
+(def ^:private inst-strings-no
+  {:weekdays-narrow ["S" "M" "T" "O" "T" "F" "L"]
+   :weekdays-short  ["Søn" "Man" "Tir" "Ons" "Tor" "Fre" "Lør"]
+   :weekdays-long   ["Søndag" "Mandag" "Tirsdag" "Onsdag" "Torsdag" "Fredag" "Lørdag"]
+   :months-narrow   ["J" "F" "M" "A" "M" "J" "J" "A" "S" "O" "N" "D"]
+   :months-short    ["Jan" "Feb" "Mar" "Apr" "Mai" "Jun" "Jul" "Aug" "Sep" "Okt" "Nov" "Des"]
+   :months-long     ["Januar" "Februar" "Mars" "April" "Mai" "Juni" "Juli" "August" "September" "Oktober" "November" "Desember"]
+   :dayperiods      ["AM" "PM"]
+   :eras-short      ["f.Kr." "e.Kr."]
+   :eras-long       ["Før Kristus" "Etter Kristus"]})
+
 (def ^:private is-finite? js/isFinite)
 
 (defn ^:private round-to-decimals
@@ -35,6 +90,7 @@
     :12-hour (tongue/inst-formatter "{hour12}" inst-strings-en)
     :two-decimals (fn [num] (format-number-en (round-to-decimals num 2)))
     :percent (fn [num] (str (format-number-en (round-to-decimals num 2)) "%"))
+    :last-updated (fn [d] (str "Last updated " ((tongue/inst-formatter "{month-long} {day}, {year}" inst-strings-en) d)))
 
     :main-title  "Welcome to Our ASVA Assessment Page"
     :preface-1 "Our mission is to integrate robust security practices into our services. This assessment, aligned with "
@@ -71,7 +127,8 @@
     :failed-reading "Error reading the ASVS file. Check if the file exists, is accessible, and is in JSON format."}
 
    :nb
-   {:main-title "Velkommen til vår ASVA-vurderingsside"
+   {:last-updated (fn [d] (str "Sist oppdatert " ((tongue/inst-formatter "{day}. {month-long} {year}" inst-strings-no) d)))
+    :main-title "Velkommen til vår ASVA-vurderingsside"
     :preface-1 "Vår misjon er å integrere robuste sikkerhetspraksiser i våre tjenester. Denne vurderingen, i tråd med "
     :preface-link-1 "OWASPs ASVA-retningslinjer"
     :preface-2 ", sikrer at våre applikasjoner er sikre og motstandsdyktige. Vi benytter ressurser som "
@@ -107,7 +164,8 @@
 
 
    :nl
-   {:main-title "Welkom op onze ASVA-beoordelingspagina"
+   {:last-updated (fn [d] (str "Laatst bijgewerkt " ((tongue/inst-formatter "{day} {month-long} {year}" inst-strings-nl) d)))
+    :main-title "Welkom op onze ASVA-beoordelingspagina"
     :preface-1 "Onze missie is om robuuste beveiligingspraktijken te integreren in onze services. Deze beoordeling, in lijn met "
     :preface-link-1 "OWASP's ASVA-richtlijnen"
     :preface-2 ", zorgt ervoor dat onze applicaties veilig en veerkrachtig zijn. We gebruiken bronnen zoals de "
@@ -138,7 +196,8 @@
     :config "Configuratie"}
 
    :pt
-   {:main-title "Bem-vindo à nossa Página de Avaliação ASVA"
+   {:last-updated (fn [d] (str "Última atualização " ((tongue/inst-formatter "{day} de {month-long} de {year}" inst-strings-pt) d)))
+    :main-title "Bem-vindo à nossa Página de Avaliação ASVA"
     :preface-1 "Nossa missão é integrar práticas de segurança robustas aos nossos serviços. Esta avaliação, alinhada com "
     :preface-link-1 "as diretrizes da ASVA da OWASP"
     :preface-2 ", garante que nossas aplicações sejam seguras e resilientes. Utilizamos recursos como o "
@@ -169,7 +228,8 @@
     :config "Configuração"}
 
    :es
-   {:main-title "Bienvenido a nuestra página de evaluación ASVA"
+   {:last-updated (fn [d] (str "Última actualización " ((tongue/inst-formatter "{day} de {month-long} de {year}" inst-strings-es) d)))
+    :main-title "Bienvenido a nuestra página de evaluación ASVA"
     :preface-1 "Nuestra misión es integrar prácticas de seguridad robustas en nuestros servicios. Esta evaluación, alineada con "
     :preface-link-1 "las pautas de ASVA de OWASP"
     :preface-2 ", asegura que nuestras aplicaciones sean seguras y resilientes. Utilizamos recursos como "
@@ -200,7 +260,8 @@
     :config "Configuración"}
 
    :ko
-   {:main-title "우리 ASVA 평가 페이지에 오신 것을 환영합니다"
+   {:last-updated (fn [d] (str "마지막 업데이트 " ((tongue/inst-formatter "{year}년 {month-long} {day}일" inst-strings-ko) d)))
+    :main-title "우리 ASVA 평가 페이지에 오신 것을 환영합니다"
     :preface-1 "우리의 사명은 우리 서비스에 강력한 보안 관행을 통합하는 것입니다. 이 평가는"
     :preface-link-1 "OWASP의 ASVA 가이드라인"
     :preface-2 "에 부합하여, 우리의 애플리케이션이 안전하고 복원력이 있도록 보장합니다. 우리는 "

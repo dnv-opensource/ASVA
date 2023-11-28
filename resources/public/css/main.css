@@ -51,6 +51,7 @@ h5,
 p {
     max-width: 50em;
     font-weight: 100;
+    hanging-punctuation: first allow-end last;
 }
 
 h1 {
@@ -80,6 +81,7 @@ p {
     --earth-hs: 38, 50%;
     --land-green-hs: 114, 49%;
     --digi-green-hs: 139, 100%;
+    --warning-hs: 357, 68%;
     --white-hs: 0, 0%;
     --black-hs: 0, 0%;
 
@@ -89,7 +91,7 @@ p {
     --land-green-hsl: var(--land-green-hs), var(--medium);
     --digi-green-hsl: var(--digi-green-hs), var(--medium-light);
     --dark-blue-hsl: var(--blue-hs), var(--dark);
-    --warning-hsl: 357, 68%, 46%;
+    --warning-hsl: var(--warning-hs), 46%;
     --background-hsl: var(--sandstone-hs), var(--very-light);
     --background-hsl-2: var(--white-hs), 99%;
     --background-hsl-3: var(--white-hs), 99.5%;
@@ -508,13 +510,17 @@ header a:hover {
     pointer-events: none;
 }
 .badge {
-    background: var(--warning-color);
+    --color: var(--sky-blue-hs);
+    background: hsl(var(--color), 93%);
     border-radius: calc(var(--border-radius) * 0.25);
-    color: white;
+    color: hsl(var(--color), 65%);
     font-size: small;
     display: inline-block;
     text-decoration: none;
     padding: 0.2em 0.4em;
+}
+.badge.warning {
+    --color: var(--warning-hs);
 }
 
 .dot {

@@ -1,12 +1,10 @@
 (ns asvs.assessments
-  (:require
-   [asvs.notifications :as notifications]
-   [asvs.components :refer [highlight progress-indicator]]
-   [asvs.i18n :refer [t]]
-   [asvs.icons :as icons]
-   [asvs.utils :refer [<> e> slug]]
-   [clojure.string :as str]
-   [re-frame.alpha :as re-frame]))
+  (:require [asvs.components :refer [highlight progress-indicator]]
+            [asvs.i18n :refer [t]]
+            [asvs.icons :as icons]
+            [asvs.utils :refer [<> e> slug]]
+            [clojure.string :as str]
+            [re-frame.alpha :as re-frame]))
 
 (defn parse-int [key]
   (js/parseInt (re-find #"\d+" key)))
@@ -108,7 +106,7 @@
         (map (fn [[k v]] [(parse-int k) v]))
         (sort))))
 
-(defn assessment [{:keys [item description current-maturity comment evidence cwe]}]
+(defn assessment [{:keys [item description current-maturity comment evidence cwe last-updated]}]
   (let [query (re-frame/subscribe [::query])
         url (str (-> js/location .-host) "/#" item)
         comment-view (fn [text] [:p.comment (highlight text @query)])
@@ -120,13 +118,12 @@
            :href url :on-click (e> (.preventDefault e)
                                    (-> js/navigator .-clipboard (.writeText url)))}
        [icons/link {:class [:small]}]]]
+     (when last-updated [:small.last-updated.badge (t :last-updated last-updated)])
      [:p.description (highlight description @query)]
-     (when (not (str/blank? cwe)) [:a.badge {:target :_blank :rel :noopener :href (cwe-url cwe)} cwe])
+     (when (not (str/blank? cwe)) [:a.badge.warning {:target :_blank :rel :noopener :href (cwe-url cwe)} cwe])
      [:div.horizontal
-      (when (seq evidence)
-        [:div {:title (str/join "\n" evidence)} [icons/evidence]])
-      (when (seq comment)
-        [:div {:title (str/join "\n" comment)} [icons/comments {:class [:dot]}]])]
+      (when (seq evidence) [:div {:title (str/join "\n" evidence)} [icons/evidence]])
+      (when (seq comment) [:div {:title (str/join "\n" comment)} [icons/comments {:class [:dot]}]])]
      [progress-indicator {:width 40} (* current-maturity 100)]]))
 
 (defn view [grouped-assessments]
