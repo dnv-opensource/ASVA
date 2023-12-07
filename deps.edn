@@ -1,11 +1,13 @@
-{:deps {reagent/reagent {:mvn/version "1.2.0"}
-        re-frame/re-frame {:git/url "https://github.com/day8/re-frame"
-                           :git/sha "792f1e55467bea89e3b687c2b1ace616a9f02ca7"}
-        tongue/tongue {:mvn/version "0.4.4"}
-        cljs-bean/cljs-bean {:mvn/version "1.9.0"}}
- :paths ["src/cljs" "src/cljc" "resources"]
+{:deps {reagent/reagent       {:mvn/version "1.2.0"}
+        re-frame/re-frame     {:mvn/version "1.4.0"}
+        tongue/tongue         {:mvn/version "0.4.4"}
+        cljs-bean/cljs-bean   {:mvn/version "1.9.0"}
+        instaparse/instaparse {:mvn/version "1.4.12"}}
+ :paths ["src" "resources"]
  :aliases
  {:dev
-  {:extra-deps {thheller/shadow-cljs {:mvn/version "2.26.0"}
-                org.clojure/test.check {:mvn/version "1.1.0"}}
+  {:extra-deps {thheller/shadow-cljs       {:mvn/version "2.26.2"}
+                org.clojure/test.check     {:mvn/version "1.1.0"}
+                day8.re-frame/tracing      {:mvn/version "0.6.2"}
+                day8.re-frame/re-frame-10x {:mvn/version "1.9.1"}}
    :main-opts ["-m" "shadow.cljs.devtools.cli" "watch" "app"]}}}

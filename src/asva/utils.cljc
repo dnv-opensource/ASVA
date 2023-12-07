@@ -1,8 +1,9 @@
-(ns asvs.utils
+(ns asva.utils
   (:require
    [clojure.string :as str]
-   #?(:cljs [re-frame.alpha :as re-frame]))
-  #?(:cljs (:require-macros [asvs.utils]))
+   #?(:cljs [cljs-bean.core :as bean])
+   #?(:cljs [re-frame.core :as re-frame]))
+  #?(:cljs (:require-macros [asva.utils]))
   #?(:clj (:refer-clojure :exclude [slurp])))
 
 (defn assoc-event-db
@@ -103,3 +104,28 @@
       (dispatch>e [:event-id value])"
      [d]
      `(e> (re-frame/dispatch ~d))))
+
+(defn parse-int [key]
+  (#?(:clj Integer/parseInt :cljs js/parseInt) (re-find #"\d+" key)))
+
+(defn pascal-to-kebab [s]
+  (->> (re-seq #"[A-Z]+[a-z0-9]*|\.|/" s)
+       (map (fn [x]
+              (cond
+                (or (= x ".") (= x "/")) x
+                :else (str/lower-case x))))
+       (str/join "-")))
+
+(defn kebab-to-pascal [s]
+  (->> (str/split s #"-")
+       (map str/capitalize)
+       (apply str)))
+
+(defn prop->key [prop]
+  (keyword (pascal-to-kebab prop)))
+
+(defn key->prop [key]
+  (kebab-to-pascal (name key)))
+
+#?(:cljs (defn ->clj [x] (bean/->clj x :prop->key prop->key :key->prop key->prop)))
+#?(:cljs (defn ->js [x] (bean/->js x :prop->key prop->key :key->prop key->prop)))

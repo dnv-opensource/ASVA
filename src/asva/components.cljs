@@ -1,19 +1,32 @@
-(ns asvs.components
+(ns asva.components
   (:require
-   [asvs.i18n :refer [t]]
-   [asvs.icons :as icons]
-   [asvs.utils :refer [->params e>]]
+   [asva.i18n :refer [t]]
+   [asva.icons :as icons]
+   [asva.utils :refer [->params e>]]
    [clojure.string :as str]
-   [re-frame.loggers :as loggers]
    [reagent.core :as reagent]))
 
 (defn progress-indicator [& args]
-  (let [[params percent] (->params args)
+  (let [[{:keys [on-drag] :as params} percent] (->params args)
+        percent (if (js/isNaN percent) 0 percent)
         radius 45
         size (* (+ radius 5) 2)
         circumference (* 2 Math/PI radius)
-        offset (* circumference (- 1 (/ percent 100)))]
-    [:svg.Progress-indicator (merge {:viewBox (str "0 0 " size " " size)} params)
+        offset (* circumference (- 1 (/ percent 100)))
+        dragging (atom false)
+        start-pos (atom nil)
+        mouse-up-ref (atom nil)
+        handle-mouse-move (e> (when @dragging (on-drag (-> e .-clientY) @start-pos)))
+        handle-mouse-up (e> (reset! dragging false)
+                            (reset! start-pos nil)
+                            (.removeEventListener js/document "mousemove" handle-mouse-move)
+                            (.removeEventListener js/document "mouseup" @mouse-up-ref)
+                            (reset! mouse-up-ref nil))]
+    [:svg.Progress-indicator (merge {:viewBox (str "0 0 " size " " size)
+                                     :on-mouse-down (e> (reset! dragging true)
+                                                        (reset! start-pos (-> e .-clientY))
+                                                        (.addEventListener js/document "mousemove" handle-mouse-move)
+                                                        (reset! mouse-up-ref (.addEventListener js/document "mouseup" handle-mouse-up)))} params)
      [:circle.inactive {:cx (+ radius 5) :cy (+ radius 5) :r radius :fill "none"
                         :stroke-width "10"}]
      [:circle.active {:cx (+ radius 5) :cy (+ radius 5) :r radius :fill "none"

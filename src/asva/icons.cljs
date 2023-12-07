@@ -1,7 +1,8 @@
 
-(ns asvs.icons
-  (:require [asvs.utils :refer [->params]]
-            [clojure.string :as str]))
+(ns asva.icons
+  (:require
+   [asva.utils :refer [->params]]
+   [clojure.string :as str]))
 
 (def ^:private size 24)
 
@@ -33,12 +34,6 @@
   (into [svg (merge-with into {:class [:check]} params)]
         [[:path {:d "M5 12l5 5l10 -10"}]]))
 
-(defn cloud-upload [params]
-  (into [svg (merge-with into {:class [:cloud-upload]} params)]
-        [[:path {:d "M7 18a4.6 4.4 0 0 1 0 -9a5 4.5 0 0 1 11 2h1a3.5 3.5 0 0 1 0 7h-1"}]
-         [:path {:d "M9 15l3 -3l3 3"}]
-         [:path {:d "M12 12l0 9"}]]))
-
 (defn close [params]
   (into [svg (merge-with into {:class [:close]} params)]
         [[:path
@@ -46,13 +41,20 @@
            :fill "currentColor"
            :stroke-width "0"}]]))
 
-(defn comments [params]
-  (into [svg (merge-with into {:class [:comments]} params)]
-        [[:path {:d "M21 14l-3 -3h-7a1 1 0 0 1 -1 -1v-6a1 1 0 0 1 1 -1h9a1 1 0 0 1 1 1v10"}]
-         [:path {:d "M14 15v2a1 1 0 0 1 -1 1h-7l-3 3v-10a1 1 0 0 1 1 -1h2"}]]))
+(defn markdown [params]
+  (into [svg (merge-with into {:class [:markdown]} params)]
+        [[:path {:d "M3 5m0 2a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v10a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2z"}]
+         [:path {:d "M7 15v-6l2 2l2 -2v6"}]
+         [:path {:d "M14 13l2 2l2 -2m-2 2v-6"}]]))
 
-(defn evidence [params]
-  (into [svg (merge-with into {:class [:evidence]} params)]
-        [[:path {:d "M12 9m-6 0a6 6 0 1 0 12 0a6 6 0 1 0 -12 0"}]
-         [:path {:d "M12 15l3.4 5.89l1.598 -3.233l3.598 .232l-3.4 -5.889"}]
-         [:path {:d "M6.802 12l-3.4 5.89l3.598 -.233l1.598 3.232l3.4 -5.889"}]]))
+(defn download [params]
+  (into [svg (merge-with into {:class [:export]} params)]
+        [[:path {:d "M14 3v4a1 1 0 0 0 1 1h4"}]
+         [:path {:d "M11.5 21h-4.5a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v5m-5 6h7m-3 -3l3 3l-3 3"}]]))
+
+(defn upload [params]
+  (into [svg (merge-with into {:class [:import]} params)]
+        [[:path {:d "M14 3v4a1 1 0 0 0 1 1h4"}]
+         [:path {:d "M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2z"}]
+         [:path {:d "M12 11v6"}]
+         [:path {:d "M9.5 13.5l2.5 -2.5l2.5 2.5"}]]))

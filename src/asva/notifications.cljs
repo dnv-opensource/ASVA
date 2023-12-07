@@ -1,7 +1,8 @@
-(ns asvs.notifications
-  (:require [asvs.icons :as icons]
-            [asvs.utils :refer [<> <sub dispatch>e]]
-            [re-frame.alpha :as re-frame]))
+(ns asva.notifications
+  (:require
+   [asva.icons :as icons]
+   [asva.utils :refer [<> <sub dispatch>e]]
+   [re-frame.core :as re-frame]))
 
 (re-frame/reg-event-db
  ::initialize

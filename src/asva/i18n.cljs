@@ -1,4 +1,4 @@
-(ns asvs.i18n
+(ns asva.i18n
   (:require
    [clojure.string :as str]
    [tongue.core :as tongue]))
@@ -98,6 +98,11 @@
     :preface-2 ", ensures our applications are secure and resilient. We leverage resources like the "
     :preface-link-2 "OWASP Top Ten Proactive Controls"
     :preface-3 " to guide our approach, fostering a culture of security and awareness. Your expertise and collaboration in this process are key to maintaining our commitment to security excellence."
+
+    :assessment-notes "Notes on compliance, risks, and mitigation strategies"
+    :export-assessments "Export the assessments as a JSON-file"
+    :import-assessments "Import an assessments JSON-file"
+    :markdown-support "This textarea supports markdown formatting"
 
     :file-upload-info "Drag & drop or click to choose file to upload"
     :file-upload "ASVS JSON (.json, Max: 1 MB)"

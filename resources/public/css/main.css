@@ -62,7 +62,8 @@ h2,
 h3,
 h4,
 h5,
-p {
+p,
+ul {
     line-height: 140%;
 }
 
@@ -192,6 +193,13 @@ mark {
     display: flex;
     flex-direction: row;
     gap: 1em;
+}
+
+ul {
+    list-style-type: none;
+}
+ul li:not(:has(input)) {
+    list-style-type: disc;
 }
 
 /*
@@ -326,6 +334,36 @@ mark {
         opacity: 1;
     }
 
+.Markdown {
+    position: relative;
+    width: 100%;
+}
+.Markdown textarea {
+    border-radius: calc(var(--border-radius) - 0.5em);
+    border: 1px solid var(--sandstone-color);
+    caret-color: var(--sandstone-color);
+    caret-shape: underscore;
+    form-sizing: content;
+    overflow: hidden;
+    max-height: 10lh;
+    min-height: 2lh;
+    min-width: 70ch;
+    width: 100%;
+    padding: 1em;
+    resize: none;
+    transition: .2s ease;
+}
+.Markdown textarea:focus + .markdown {
+    color: hsl(var(--sandstone-hs), 60%);
+}
+.Markdown .markdown {
+    color: var(--sandstone-color);
+    position: absolute;
+    right: 1rem;
+    bottom: 0.5rem;
+    transition: .2s ease;
+}
+
 /*
  * Sections
  */
@@ -376,6 +414,16 @@ header a:hover {
     header > div {
         flex-direction: column;
     }
+}
+
+.Import-export {
+    display: flex;
+    flex-direction: row;
+    gap: 1rem;
+    position: fixed;
+    top: 2rem;
+    right: 2rem;
+    z-index: 3;
 }
 
 .Search {
@@ -480,6 +528,7 @@ header a:hover {
         opacity: 0.2;
     }
     .Assessment .Progress-indicator {
+        user-select: none;
         position: absolute;
         top: 0;
         left: 0;
