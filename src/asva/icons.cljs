@@ -1,4 +1,3 @@
-
 (ns asva.icons
   (:require
    [asva.utils :refer [->params]]
@@ -41,6 +40,13 @@
            :fill "currentColor"
            :stroke-width "0"}]]))
 
+(defn note [params]
+  (into [svg (merge-with into {:class [:note]} params)]
+        [[:path {:d "M7 7h-1a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2 -2v-1"}]
+         [:path
+          {:d "M20.385 6.585a2.1 2.1 0 0 0 -2.97 -2.97l-8.415 8.385v3h3l8.385 -8.415z"}]
+         [:path {:d "M16 5l3 3"}]]))
+
 (defn markdown [params]
   (into [svg (merge-with into {:class [:markdown]} params)]
         [[:path {:d "M3 5m0 2a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v10a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2z"}]
@@ -49,8 +55,14 @@
 
 (defn download [params]
   (into [svg (merge-with into {:class [:export]} params)]
-        [[:path {:d "M14 3v4a1 1 0 0 0 1 1h4"}]
-         [:path {:d "M11.5 21h-4.5a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v5m-5 6h7m-3 -3l3 3l-3 3"}]]))
+        (if (not (:alt params))
+          [[:path {:d "M14 3v4a1 1 0 0 0 1 1h4"}]
+           [:path
+            {:d "M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2z"}]
+           [:path {:d "M12 17v-6"}]
+           [:path {:d "M9.5 14.5l2.5 2.5l2.5 -2.5"}]]
+          [[:path {:d "M14 3v4a1 1 0 0 0 1 1h4"}]
+           [:path {:d "M11.5 21h-4.5a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v5m-5 6h7m-3 -3l3 3l-3 3"}]])))
 
 (defn upload [params]
   (into [svg (merge-with into {:class [:import]} params)]

@@ -109,7 +109,7 @@
   (#?(:clj Integer/parseInt :cljs js/parseInt) (re-find #"\d+" key)))
 
 (defn pascal-to-kebab [s]
-  (->> (re-seq #"[A-Z]+[a-z0-9]*|\.|/" s)
+  (->> (re-seq #"[A-Z-_]+[a-z0-9-_\/\.]*" s)
        (map (fn [x]
               (cond
                 (or (= x ".") (= x "/")) x

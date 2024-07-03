@@ -16,17 +16,25 @@
 (defonce ^:private root
   (create-root (gdom/getElement "app")))
 
-;; TODO Remove wrapper div
+(re-frame/reg-event-fx
+ :loading
+  (fn [{:keys [db]} [_ v]]
+    (let [f (if (= v :inc) inc dec)]
+      {:db (update db :loading (fnil f 0))})))
+
+(re-frame/reg-sub :loading?
+  (fn [db _] (> (:loading db) 0)))
+
 (defn header []
   (let [progress (<sub [::assessments/progress])
-        {:keys [title description]} (<sub [::assessments/introduction])]
-    [:header
-     [:div
-      [progress-indicator {:width 256} progress]
-      (when (some? title)
-        [:section.Introduction
-         [:h1.DNV title]
-         [:p.preface description]])]]))
+		     {:keys [title description]} (<sub [::assessments/introduction])]
+	[:header
+	 [:div
+	  [progress-indicator {:width 256} progress]
+	  (when (some? title)
+            [:section.Introduction
+             [:h1.DNV title]
+             [:p.preface description]])]]))
 
 (defn- search []
   (let [level-1 (<sub [::assessments/level-1])
@@ -53,27 +61,32 @@
          [:a {:title name
               :href (str (.-host js/location) "/#" ordinal)
               :on-click (e> (.preventDefault e)
-                            (set! (.-hash js/location) ordinal))}
+                          (set! (.-hash js/location) ordinal))}
           short-name]])]]))
 
 (defn- read-asvs-file [file]
+  (re-frame/dispatch [:loading :inc])
   (let [reader (js/FileReader.)]
     (set! (.-onload reader) (dispatch>e (if-let [asvs (-> target .-result js/JSON.parse ->clj)]
                                           [::assessments/asvs asvs]
                                           [::notifications/add (t :failed-parsing)])))
     (set! (.-onerror reader) (dispatch>e [::notifications/add (t :failed-reading)]))
+    (set! (.-onloadend reader) (dispatch>e [:loading :dec]))
     (.readAsText reader file)))
 
 (defn- read-assessments-file [file]
+  (re-frame/dispatch [:loading :inc])
   (let [reader (js/FileReader.)]
     (set! (.-onload reader) (dispatch>e (if-let [assessments-json (-> target .-result js/JSON.parse ->clj)]
                                           [::assessments/assessments assessments-json]
                                           [::notifications/add (t :failed-parsing)])))
     (set! (.-onerror reader) (dispatch>e [::notifications/add (t :failed-reading)]))
+    (set! (.-onloadend reader) (dispatch>e [:loading :dec]))
     (.readAsText reader file)))
 
 (defn- import-export []
-  (let [json (-> (<sub [::assessments/assessments]) ->js js/JSON.stringify)
+  (let [asvas (<sub [::assessments/assessments])
+        json (-> asvas ->js js/JSON.stringify)
         blob (js/Blob. #js [json] #js {"type" "application/json"})
         url (js/URL.createObjectURL blob)
         trigger-file-dialog (fn [e]
@@ -87,26 +100,26 @@
                                 :on-change (e> (read-assessments-file (-> target .-files first)))}]
      [:a {:href "/import-assessments" :on-click trigger-file-dialog :title (t :import-assessments)}
       [icons/upload]]
-     [:a {:href url :download (str "ASVA.json") :title (t :export-assessments)}
-      [icons/download]]]))
+     (when (seq asvas)
+       [:a {:href url :download (str "ASVA.json") :title (t :export-assessments)}
+        [icons/download]])]))
 
 (defn- app []
-  (let [all-assessments (<sub [::assessments/items])]
-    [:main
-     [notifications/view]
-     (if (seq all-assessments)
-       [:<>
-        [header]
-        [search]
-        [table-of-contents]
-        [import-export]
-        [assessments/view]]
-       [upload-boundary {:accept [".json"]
-                         :accept-types #{"application/json"}
-                         :on-upload #(read-asvs-file (first %))}
-        [icons/upload {:class [:large]}]
-        [:strong (t :file-upload-info)]
-        [:small (t :file-upload)]])]))
+  [:main {:class (if (<sub [:loading?]) :loading :loaded)}
+   [notifications/view]
+   (if-let [all-assessments (<sub [::assessments/items])]
+     [:<>
+      [header]
+      [search]
+      [table-of-contents]
+      [import-export]
+      [assessments/view]]
+     [upload-boundary {:accept [".json"]
+		       :accept-types #{"application/json"}
+		       :on-upload #(read-asvs-file (first %))}
+      [icons/upload {:class [:large]}]
+      [:strong (t :file-upload-info)]
+      [:small (t :file-upload)]])])
 
 (defn ^:dev/after-load main []
   (-> root (.render (reagent/as-element [app]))))

@@ -7,50 +7,81 @@
    [reagent.core :as reagent]))
 
 (defn progress-indicator [& args]
-  (let [[{:keys [on-drag] :as params} percent] (->params args)
-        percent (if (js/isNaN percent) 0 percent)
-        radius 45
-        size (* (+ radius 5) 2)
-        circumference (* 2 Math/PI radius)
-        offset (* circumference (- 1 (/ percent 100)))
-        dragging (atom false)
-        start-pos (atom nil)
-        mouse-up-ref (atom nil)
-        handle-mouse-move (e> (when @dragging (on-drag (-> e .-clientY) @start-pos)))
-        handle-mouse-up (e> (reset! dragging false)
-                            (reset! start-pos nil)
-                            (.removeEventListener js/document "mousemove" handle-mouse-move)
-                            (.removeEventListener js/document "mouseup" @mouse-up-ref)
-                            (reset! mouse-up-ref nil))]
+  (let [[{:keys [on-progress width]
+	  :or {width 96} :as params} percent] (->params args)
+	not-applicable? (= percent -1)
+	stroke-width (max 6 (* width 0.1))
+	radius (- width stroke-width)
+	svg-center (+ radius stroke-width)
+	size (+ (* svg-center 2) (* stroke-width 2))
+	circumference (* 2 Math/PI radius)
+	initial-offset circumference
+	progress-offset (* circumference (/ (min 100 (max 0 (if (js/isNaN percent) 0 percent))) 100))
+	final-offset (- initial-offset progress-offset)
+	dragging (atom false)
+	start-coord (atom nil)
+	mouse-up-ref (atom nil)
+	handle-on-click (fn []
+			  (cond
+			    (< percent 0) (on-progress 0)
+			    (< percent 25)  (on-progress 25)
+			    (< percent 50)  (on-progress 50)
+			    (< percent 75)  (on-progress 75)
+			    (< percent 100) (on-progress 100)
+			    (= percent 100) (on-progress -1)
+			    :else           (on-progress 0)))
+
+	handle-mouse-move (e> (when @dragging
+				(let [y-pos (-> e .-clientY)
+				      old-y-pos @start-coord]
+				  (on-progress (if (nil? old-y-pos) y-pos (- old-y-pos y-pos))))))
+	handle-mouse-up (e>
+			  (when (= @start-coord (-> e .-clientY))
+			    (handle-on-click))
+			  (reset! dragging false)
+			  (reset! start-coord nil)
+			  (.removeEventListener js/document "mousemove" handle-mouse-move)
+			  (.removeEventListener js/document "mouseup" @mouse-up-ref)
+			  (reset! mouse-up-ref nil))
+	handle-mouse-down (e> (reset! dragging true)
+			    (reset! start-coord (-> e .-clientY))
+			    (.addEventListener js/document "mousemove" handle-mouse-move)
+			    (reset! mouse-up-ref (.addEventListener js/document "mouseup" handle-mouse-up)))]
     [:svg.Progress-indicator (merge {:viewBox (str "0 0 " size " " size)
-                                     :on-mouse-down (e> (reset! dragging true)
-                                                        (reset! start-pos (-> e .-clientY))
-                                                        (.addEventListener js/document "mousemove" handle-mouse-move)
-                                                        (reset! mouse-up-ref (.addEventListener js/document "mouseup" handle-mouse-up)))} params)
-     [:circle.inactive {:cx (+ radius 5) :cy (+ radius 5) :r radius :fill "none"
-                        :stroke-width "10"}]
-     [:circle.active {:cx (+ radius 5) :cy (+ radius 5) :r radius :fill "none"
-                      :stroke-width "10"
-                      :stroke-dasharray (str circumference " " circumference)
-                      :stroke-dashoffset (str offset)
-                      :transform "rotate(-90 50 50)"}]
-     [:title (t :percent percent)]]))
+				     :on-mouse-down handle-mouse-down
+				     :class (when not-applicable? :not-applicable)}
+			       params)
+     [:defs
+      [:filter#glow [:feGaussianBlur {:stdDeviation 3 :result "coloredBlur"}]
+       [:feMerge
+	[:feMergeNode {:in "coloredBlur"}]
+	[:feMergeNode {:in "SourceGraphic"}]]]]
+     [:circle.inactive {:cx svg-center :cy svg-center :r radius :fill "none"
+			:stroke-width stroke-width}]
+     [:rect {:x stroke-width :y (dec svg-center) :width (- size (* stroke-width 4)) :height stroke-width}]
+     [:circle.active {:cx svg-center :cy svg-center :r radius :fill "none"
+		      :stroke-width stroke-width
+		      :stroke-dasharray (str circumference " " circumference)
+		      :stroke-dashoffset (str final-offset)}]
+     [:title (if not-applicable?
+	       "N/A"
+	       (str percent "%"))]]))
 
 (defn- -highlight
-  "Returns a sequence of text segments based on the given `query`. Segments that
+       "Returns a sequence of text segments based on the given `query`. Segments that
    match the query are wrapped in a `:mark` hiccup element for styling
-   purposes. The function is case-insensitive in its matching."
+   purposes."
   [text query]
   (if (> (count query) 2)
-    (let [pattern (re-pattern (str "(?i)(" query ")"))
-          parts (str/split text pattern)]
-      (into [:<>]
-            (map (fn [segment]
-                   (if (re-matches pattern segment)
-                     [:mark segment]
-                     segment))
-                 parts)))
-    text))
+	   (let [pattern (re-pattern (str "(?i)(" query ")"))
+			 parts (str/split text pattern)]
+	     (into [:<>]
+		   (map (fn [segment]
+			    (if (re-matches pattern segment)
+				[:mark segment]
+			      segment))
+			parts)))
+	 text))
 
 (def highlight (memoize -highlight))
 

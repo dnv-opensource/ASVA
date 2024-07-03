@@ -7,8 +7,7 @@
 (re-frame/reg-event-db
  ::initialize
  (fn [db _]
-   (merge db
-          {::messages {}})))
+   (merge db {::messages {}})))
 
 (<> [::messages])
 

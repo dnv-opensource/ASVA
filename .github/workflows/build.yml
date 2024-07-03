@@ -1,0 +1,66 @@
+name: ASVA
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    defaults:
+      run:
+        working-directory: ${{ github.workspace }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Setup Clojure
+        uses: DeLaGuardo/setup-clojure@10.1
+        with:
+          cli: 1.10.1.693
+          clj-kondo: 2022.05.31
+
+      - name: Cache node modules
+        uses: actions/cache@v3
+        env:
+          cache-name: cache-node-modules
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.cache-name }}-
+            ${{ runner.os }}-build-
+            ${{ runner.os }}-
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Build with shadow-cljs
+        run: npx shadow-cljs release app
+
+      - name: Remove everything but the final artifact
+        shell: bash
+        run: |
+          sudo mv resources/public/* .
+          find . -type f ! \( -path './index.html' -o -path './css/*' -o -path './fonts/*' -o -path './js/*' -o -path './.git/*' \) -delete
+
+      - name: Publish to Github pages
+        shell: bash
+        run: |
+          git config --global user.name documentation-action
+          git config --global user.email stc-support@dnv.com
+          git add -A && git commit -m "ASVA"
+          git push origin HEAD:refs/heads/gh-pages --force

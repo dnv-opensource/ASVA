@@ -49,7 +49,7 @@ h3,
 h4,
 h5,
 p {
-    max-width: 50em;
+    max-width: 75ch;
     font-weight: 100;
     hanging-punctuation: first allow-end last;
 }
@@ -102,6 +102,7 @@ ul {
     --risk-yellow-color: hsl(48, 100%, 50%);
     --risk-orange-color: hsl(34, 100%, 46%);
 
+    --black-color: hsl(var(--black-hs), var(--dark));
     --blue-color: hsl(var(--blue-hsl));
     --sky-blue-color: hsl(var(--sky-blue-hsl));
     --sea-blue-color: hsl(var(--sea-blue-hsl));
@@ -124,28 +125,28 @@ ul {
  * Light Theme
  */
 
- :root {
-    --background-color: hsl(var(--background-hsl));
-    --background-color-2: hsl(var(--background-hsl-2));
-    --background-color-3: hsl(var(--background-hsl-3));
-    --background-color-4: hsl(var(--background-hsl-4));
-    --foreground-color: hsl(var(--foreground-hsl));
- 
-    --primary-color: var(--blue-color);
- 
-    --box-shadow:
-        1px 2px 2px hsla(var(--sandstone-hs), 70%, 0.2),
-        2px 4px 4px hsla(var(--sandstone-hs), 70%, 0.2);
-    --box-shadow-2:
-        1px 2px 2px hsla(var(--sandstone-hs), 70%, 0.333),
-        2px 4px 4px hsla(var(--sandstone-hs), 70%, 0.333),
-        3px 6px 6px hsla(var(--sandstone-hs), 70%, 0.333);
-    --box-shadow-3:
-          1px 2px 2px hsla(var(--sandstone-hs), 70%, 0.4),
-          2px 4px 4px hsla(var(--sandstone-hs), 70%, 0.4),
-          3px 6px 6px hsla(var(--sandstone-hs), 70%, 0.4),
-          4px 8px 8px hsla(var(--sandstone-hs), 70%, 0.4);
- }
+:root {
+   --background-color: hsl(var(--background-hsl));
+   --background-color-2: hsl(var(--background-hsl-2));
+   --background-color-3: hsl(var(--background-hsl-3));
+   --background-color-4: hsl(var(--background-hsl-4));
+   --foreground-color: hsl(var(--foreground-hsl));
+
+   --primary-color: var(--blue-color);
+
+   --box-shadow:
+       1px 2px 2px hsla(var(--sandstone-hs), 70%, 0.2),
+       2px 4px 4px hsla(var(--sandstone-hs), 70%, 0.2);
+   --box-shadow-2:
+       1px 2px 2px hsla(var(--sandstone-hs), 70%, 0.333),
+       2px 4px 4px hsla(var(--sandstone-hs), 70%, 0.333),
+       3px 6px 6px hsla(var(--sandstone-hs), 70%, 0.333);
+   --box-shadow-3:
+       1px 2px 2px hsla(var(--sandstone-hs), 70%, 0.4),
+       2px 4px 4px hsla(var(--sandstone-hs), 70%, 0.4),
+       3px 6px 6px hsla(var(--sandstone-hs), 70%, 0.4),
+       4px 8px 8px hsla(var(--sandstone-hs), 70%, 0.4);
+}
 
 * {
     box-sizing: border-box;
@@ -221,28 +222,28 @@ ul li:not(:has(input)) {
     width: 25vw;
     z-index: 4;
 }
-    .Notification {
-        --hsl: var(--sandstone-hs), var(--medium-light);
-        background: hsla(var(--hsl), 0.3);
-        color: hsl(var(--hsl));
-        border-radius: calc(var(--border-radius) * 0.5);
-        list-style: none;
-        padding: 1em 1.5em;
-        position: relative;
-    }
-    .Notification button {
-        position: absolute;
-        color: inherit;
-        right: 0.5em;
-        top: 50%;
-        transform: translateY(-45%);
-    }
-    .Notification.success {
-        --hsl: var(--land-green-hsl);
-    }
-    .Notification.error {
-        --hsl: var(--warning-hsl);
-    }
+.Notification {
+    --hsl: var(--sandstone-hs), var(--medium-light);
+    background: hsla(var(--hsl), 0.3);
+    color: hsl(var(--hsl));
+    border-radius: calc(var(--border-radius) * 0.5);
+    list-style: none;
+    padding: 1em 1.5em;
+    position: relative;
+}
+.Notification button {
+    position: absolute;
+    color: inherit;
+    right: 0.5em;
+    top: 50%;
+    transform: translateY(-45%);
+}
+.Notification.success {
+    --hsl: var(--land-green-hsl);
+}
+.Notification.error {
+    --hsl: var(--warning-hsl);
+}
 
 .Icon.small svg {
     height: 18px;
@@ -258,15 +259,26 @@ ul li:not(:has(input)) {
 }
 .Progress-indicator .active {
     stroke: hsl(var(--sky-blue-hsl));
-    transition: .6s var(--snappy);
+}
+.Progress-indicator rect {
+    fill: var(--black-color);
+}
+.Progress-indicator:not(.not-applicable) rect {
+    opacity: 0;
+}
+.Progress-indicator.not-applicable {
+    circle {
+	stroke: var(--black-color);
+    }
 }
 
 .Upload {
+    box-sizing: border-box;
     display: flex;
     flex-direction: column;
     gap: 1em;
     height: 100vh;
-    width: 100vw;
+    width: 100%;
     place-content: center;
     place-items: center;
     text-align: center;
@@ -296,45 +308,46 @@ ul li:not(:has(input)) {
     align-items: center;
     gap: 0.5em;
 }
-    .Checkbox .check {
-        color: white;
-        position: absolute;
-        z-index: 2;
-        pointer-events: none;
-        opacity: 0;
-        transition: .2s ease;
-    }
-    .Checkbox .check > svg {
-        height: calc(var(--size) - 0.4em);
-    }
-    .Checkbox input[type=checkbox] {
-        appearance: none;
-        background: hsl(var(--blue-hs), 87%);
-        border: 1px solid hsl(var(--blue-hs), 80%);
-        border-radius: 0.3em;
-        height: var(--size);
-        width: var(--size);
-        transition: .2s ease;
-        z-index: 1;
-    }
-    .Checkbox.disabled {
-        color: hsl(var(--sandstone-hs), 80%);
-    }
-    .Checkbox input[type=checkbox]:disabled {
-        border: 1px solid hsl(var(--sandstone-hs), 80%);
-    }
-    .Checkbox input[type=checkbox]:checked {
-        background: hsl(var(--blue-hs), var(--medium));
-        border-color: hsl(var(--blue-hs), var(--medium));
-    }
-    .Checkbox:hover input[type=checkbox]:not(:disabled):not(:checked) {
-        background: hsl(var(--blue-hs), 95%);
-    }
-    .Checkbox input[type=checkbox]:checked + .check {
-        opacity: 1;
-    }
+.Checkbox .check {
+    color: white;
+    position: absolute;
+    z-index: 2;
+    pointer-events: none;
+    opacity: 0;
+    transition: .2s ease;
+}
+.Checkbox .check > svg {
+    height: calc(var(--size) - 0.4em);
+}
+.Checkbox input[type=checkbox] {
+    appearance: none;
+    background: hsl(var(--blue-hs), 87%);
+    border: 1px solid hsl(var(--blue-hs), 80%);
+    border-radius: 0.3em;
+    height: var(--size);
+    width: var(--size);
+    transition: .2s ease;
+    z-index: 1;
+}
+.Checkbox.disabled {
+    color: hsl(var(--sandstone-hs), 80%);
+}
+.Checkbox input[type=checkbox]:disabled {
+    border: 1px solid hsl(var(--sandstone-hs), 80%);
+}
+.Checkbox input[type=checkbox]:checked {
+    background: hsl(var(--blue-hs), var(--medium));
+    border-color: hsl(var(--blue-hs), var(--medium));
+}
+.Checkbox:hover input[type=checkbox]:not(:disabled):not(:checked) {
+    background: hsl(var(--blue-hs), 95%);
+}
+.Checkbox input[type=checkbox]:checked + .check {
+    opacity: 1;
+}
 
 .Markdown {
+    font-size: 0.7em;
     position: relative;
     width: 100%;
 }
@@ -344,14 +357,17 @@ ul li:not(:has(input)) {
     caret-color: var(--sandstone-color);
     caret-shape: underscore;
     form-sizing: content;
-    overflow: hidden;
     max-height: 10lh;
-    min-height: 2lh;
+    min-height: 10lh;
     min-width: 70ch;
     width: 100%;
     padding: 1em;
     resize: none;
     transition: .2s ease;
+}
+.Markdown textarea:focus {
+    border-color: hsl(var(--sandstone-hs), var(--medium-light));
+    outline: none;
 }
 .Markdown textarea:focus + .markdown {
     color: hsl(var(--sandstone-hs), 60%);
@@ -359,9 +375,12 @@ ul li:not(:has(input)) {
 .Markdown .markdown {
     color: var(--sandstone-color);
     position: absolute;
-    right: 1rem;
-    bottom: 0.5rem;
+    right: 3rem;
+    bottom: 1rem;
     transition: .2s ease;
+}
+.Markdown .markdown:hover {
+    color: hsl(var(--blue-hs), 50%);
 }
 
 /*
@@ -396,8 +415,18 @@ header p {
 header .Progress-indicator .inactive {
     stroke: hsla(var(--digi-green-hsl), 0.2);
 }
+@keyframes pulse {
+    0% { opacity: 0.25; }
+    50% { opacity: 1; }
+    100% { opacity: 0.25; }
+}
+.loading header .Progress-indicator .inactive {
+    animation: pulse 2s infinite;
+}
 header .Progress-indicator .active {
+    transition: 1s var(--snappy);
     stroke: var(--digi-green-color);
+    filter: url(#glow);
 }
 header a {
     background: hsla(var(--blue-hs), var(--medium), 0.5);
@@ -421,8 +450,8 @@ header a:hover {
     flex-direction: row;
     gap: 1rem;
     position: fixed;
-    top: 2rem;
-    right: 2rem;
+    top: 3rem;
+    right: 3rem;
     z-index: 3;
 }
 
@@ -497,6 +526,7 @@ header a:hover {
 
 .Assessments {
     font-size: 1.25em;
+    margin-bottom: 5vh;
 }
 .Assessments ol {
     margin: 0 auto;
@@ -505,52 +535,58 @@ header a:hover {
 .Assessments li {
     scroll-margin-top: 6em;
 }
-    .Assessment {
-        display: flex;
-        flex-direction: column;
-        margin-top: 6em;
-        position: relative;
-        gap: 1em;
-        align-items: flex-start;
-    }
-    .Assessment .item {
-        display: flex;
-        font-variant: tabular-nums;
-        align-items: center;
-    }
-    .Assessment .item:hover a {
-        opacity: 1;
-    }
-    .Assessment .item a {
-        padding-left: 0.25em;
-        padding-top: 0.1em;
-        transition: .2s ease;
-        opacity: 0.2;
-    }
-    .Assessment .Progress-indicator {
-        user-select: none;
-        position: absolute;
-        top: 0;
-        left: 0;
-        transform: translateX(-200%);
-        z-index: 1;
-    }
-    .Assessment .card {
-        position: relative;
-    }
-    .card .evidence, .card .comments {
-        color: var(--sandstone-color);
-        position: absolute;
-        top: 2em;
-        right: 2em;
-    }
+.Assessment {
+    display: flex;
+    flex-direction: column;
+    padding-top: 6em;
+    padding-bottom: 6em;
+    position: relative;
+    gap: 1em;
+    align-items: flex-start;
+    border-bottom: 0.5px solid var(--sandstone-color);
+}
+.Assessment .item {
+    display: flex;
+    font-variant: tabular-nums;
+    align-items: center;
+}
+.Assessment .item:hover a {
+    opacity: 1;
+}
+.Assessment .item a {
+    padding-left: 0.25em;
+    padding-top: 0.1em;
+    transition: .2s ease;
+    opacity: 0.2;
+}
+.Assessment .Progress-indicator {
+    cursor: pointer;
+    user-select: none;
+    position: absolute;
+    top: 6em;
+    left: 0;
+    transform: translateX(-200%);
+    z-index: 1;
+}
+.Assessment .Progress-indicator:active {
+    cursor: grabbing;
+}
+.Assessment .card {
+    position: relative;
+}
+.card .evidence, .card .comments {
+    color: var(--sandstone-color);
+    position: absolute;
+    top: 2em;
+    right: 2em;
+}
 
 
 .fade {
     backdrop-filter: blur(3rem);
     mask: linear-gradient(to bottom,
-            hsla(0, 0%, 98%, 1) 40%,
-            hsla(0, 0%, 98%, 0));
+			  hsla(0, 0%, 98%, 1) 40%,
+			  hsla(0, 0%, 98%, 0));
     position: fixed;
     height: 13em;
     width: 100vw;
@@ -585,4 +621,13 @@ header a:hover {
     position: absolute;
     right: 0em;
     top: -.3em;
+}
+
+
+button.primary {
+    background: hsl(var(--blue-hs), var(--medium));
+    border-radius: var(--border-radius);
+    color: white;
+    font-weight: bold;
+    padding: 0.5em 1em;
 }
