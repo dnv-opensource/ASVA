@@ -5,7 +5,7 @@ format developed by OWASP for documenting the security aspects of a
 system.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Live Demo](https://img.shields.io/badge/demo-online-green.svg)](https://dnv-opensource.github.io/asva/)
+[![Live Demo](https://img.shields.io/badge/demo-online-green.svg)](https://dnv-opensource.github.io/ASVA/)
 
 ## Requirements
 
