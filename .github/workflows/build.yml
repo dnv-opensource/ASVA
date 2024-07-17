@@ -28,10 +28,10 @@ jobs:
           node-version: 18
 
       - name: Setup Clojure
-        uses: DeLaGuardo/setup-clojure@10.1
+        uses: DeLaGuardo/setup-clojure@12.5
         with:
-          cli: 1.10.1.693
-          clj-kondo: 2022.05.31
+          cli: 1.11.3.1463
+          clj-kondo: 2024.05.24
 
       - name: Cache node modules
         uses: actions/cache@v3
