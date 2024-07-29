@@ -4,13 +4,13 @@
 
 @font-face {
   font-family: 'DNV';
-  src: url('/fonts/DNV-Regular.woff2') format('woff2');
+  src: url('../fonts/DNV-Regular.woff2') format('woff2');
   font-weight: normal;
   font-style: normal;
 }
 @font-face {
   font-family: 'Roboto';
-  src: url('/fonts/Roboto-Regular.ttf') format('ttf');
+  src: url('../fonts/Roboto-Regular.ttf') format('ttf');
   font-weight: normal;
   font-style: normal;
 }
