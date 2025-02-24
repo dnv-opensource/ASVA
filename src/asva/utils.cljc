@@ -1,8 +1,8 @@
 (ns asva.utils
   (:require
-   [clojure.string :as str]
-   #?(:cljs [cljs-bean.core :as bean])
-   #?(:cljs [re-frame.core :as re-frame]))
+    [clojure.string :as str]
+    #?(:cljs [cljs-bean.core :as bean])
+    #?(:cljs [re-frame.alpha :as re-frame]))
   #?(:cljs (:require-macros [asva.utils]))
   #?(:clj (:refer-clojure :exclude [slurp])))
 
@@ -46,10 +46,16 @@
    replaced with hyphens."
   [& args]
   (let [_slug (->> args
-                   (map (fn [s] (if (or (uuid? s) (number? s)) (str s) (name s))))
-                   (map sanitize)
-                   (str/join "-"))]
+                (map (fn [s] (if (or (uuid? s) (number? s)) (str s) (name s))))
+                (map sanitize)
+                (str/join "-"))]
     (subs _slug 0 (min 250 (count _slug)))))
+
+(defn slug-key
+  "Generates a uniform lower-cased keyword from the provided strings."
+  [& args]
+  (-> (apply slug args)
+    keyword))
 
 #?(:cljs
    (defn <sub

@@ -1,15 +1,14 @@
 (ns asva.assessments
   (:require
-   [asva.components :refer [highlight progress-indicator]]
-   [asva.i18n :refer [t]]
+    [asva.components :refer [highlight progress-indicator]]
+    [asva.i18n :refer [t]]
     [asva.icons :as icons]
-    [asva.utils :refer [<> <sub dispatch>e e> parse-int slug]]
-    [clojure.data :refer [diff]]
+    [asva.utils :refer [<> <sub dispatch>e e> parse-int slug slug-key]]
     [clojure.edn :as edn]
     [clojure.string :as str]
     [clojure.walk :refer [postwalk]]
     [hiccdown.core :refer [markdown->hiccup]]
-    [re-frame.core :as re-frame]
+    [re-frame.alpha :as re-frame]
     [reagent.core :as reagent]))
 
 (<> [::asvs
@@ -39,15 +38,17 @@
 
 (def memoized-chapter (memoize chapter))
 
-(defn enrich-item [item]
+(defn enrich-item
   "Check item and enrich it if it contains :shortcode or :req-id."
+  [item]
   (cond
-    (:shortcode item) (assoc item :chapter (memoized-chapter (:shortcode item)))
+    (:shortcode item) (assoc item :chapter (memoized-chapter (slug-key (:shortcode item))))
     (:req-id item) (assoc item :chapter (memoized-chapter (:req-id item)))
     :else item))
 
-(defn enrich-nested-items [structure]
+(defn enrich-nested-items
   "Apply `enrich-item` to every element in the innermost nested structure."
+  [structure]
   (postwalk (fn [x] (if (map? x) (enrich-item x) x)) structure))
 
 (re-frame/reg-event-fx
@@ -57,26 +58,26 @@
       {:db (assoc db k enriched-data)
        :local-storage [k enriched-data]})))
 
-
 (re-frame/reg-event-fx
   ::assessments
   (fn [{:keys [db]} [k v]]
     {:db (assoc db k v)
-    :local-storage [k v]}))
+     :local-storage [k v]}))
 
 (re-frame/reg-event-fx
   ::notes
   (fn [{:keys [db]} [_ shortcode notes]]
-    (let [updated-db (assoc-in db [::assessments shortcode :notes] notes)]
+    (let [updated-db (assoc-in db [::assessments (slug-key shortcode) :notes] notes)]
       {:db updated-db
        :local-storage [::assessments (get updated-db ::assessments)]})))
 
 (re-frame/reg-event-fx
   ::progress
   (fn [{:keys [db]} [_ shortcode progress]]
-     (let [updated-db (assoc-in db [::assessments shortcode :progress] progress)]
-       {:db updated-db
-	:local-storage [::assessments (get updated-db ::assessments)]})))
+    (let [progress (max 0 (min 100 progress))
+          updated-db (assoc-in db [::assessments (slug-key shortcode) :progress] progress)]
+      {:db updated-db
+       :local-storage [::assessments (get updated-db ::assessments)]})))
 
 ;; Both ASVS files and the flat version have the `:requirements` keyword as entry-point.
 (re-frame/reg-sub
@@ -123,7 +124,7 @@
 (defn query-filter [query {:keys [description req-description]}]
   (if (not-empty query)
     (or (match-string query req-description)
-        (match-string query description))
+      (match-string query description))
     true))
 
 (re-frame/reg-sub
@@ -138,7 +139,7 @@
   :<- [::query]
   (fn [[items assessments level-1 level-2 level-3 not-applicable? completed? query]]
     (let [transducer (comp
-		       (map #(if-let [assessment (get assessments (:shortcode %))] (merge % assessment) %))
+		       (map #(if-let [assessment (get assessments (slug-key (:shortcode %)))] (merge % assessment) %))
 		       (filter #(level-filter level-1 level-2 level-3 %))
 		       (filter #(not (and (false? not-applicable?) (neg? (:progress %)))))
 		       (filter #(not (and (not completed?) (= (:progress %) 100))))
@@ -146,17 +147,17 @@
       (sequence transducer items))))
 
 (re-frame/reg-sub
- ::progress
- :<- [::filtered-items]
- (fn [assessments]
-   (letfn [(overall-progress [assessments]
-             (let [extract-progress (map #(get % :progress 0))
-                   total (transduce (max 0 extract-progress) + 0 assessments)
-                   count (count assessments)]
-               (if (> count 0)
-                 (/ total count)
-                 0)))]
-     (overall-progress assessments))))
+  ::progress
+  :<- [::filtered-items]
+  (fn [assessments]
+    (letfn [(overall-progress [assessments]
+              (let [extract-progress (map #(get % :progress 0))
+                    total (transduce (max 0 extract-progress) + 0 assessments)
+                    count (count assessments)]
+                (if (> count 0)
+                  (/ total count)
+                  0)))]
+      (overall-progress assessments))))
 
 (re-frame/reg-sub
  ::grouped-items
@@ -224,4 +225,5 @@
 	       [:li {:key (slug :assessment n) :id n}
 		[:h1.DNV name]
 		(for [item items]
-		  ^{:key (:shortcode item)} [assessment item])]))]]))}))
+                  ^{:key (:shortcode item)}
+                   [assessment item])]))]]))}))
