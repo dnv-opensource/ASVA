@@ -1,10 +1,11 @@
 (ns hiccdown.core
   (:require
-   [clojure.string :as str]
-   [instaparse.core :as insta]
-   [instaparse.failure :as fail]))
+    [clojure.string :as str]
+    [instaparse.core :as insta]
+    [instaparse.failure :as fail]))
 
 ;; KNOWN ISSUES:
+;; FIXME: Hiccup returned is empty when using a single quote in the markdown for `markdown->hiccup`
 ;; FIXME: Paragraphs takes presidence over indented code-blocks
 ;; FIXME: End of line problems with lists. Need two or more linebreaks to yield correct behavior
 ;; FIXME: Headings are parsed as regular text inside block-quotes
@@ -12,7 +13,7 @@
 
 (def ^:private markdown-parser
   (insta/parser
-   "markdown = element+
+    "markdown = element+
     <element> = headings | hr | img | link | blocks | p | br
     
     <headings> = h1 | h2 | h3 | h4 | h5 | h6
@@ -64,15 +65,15 @@
     <word> = (formatting | link | chars)+ / whitespace
 
     (* Support for extended Latin, Cyrillic, Greek & Emoji's *)
-    <chars> = !image-mark '!' | #'[a-zA-Z0-9-_,;\ud83c\udf00-\udfff|\ud83d\udc00-\ude4f\ude80-\udeff\udc00-\uddff\u0100-\u024F\u0400-\u04FF\u0500-\u052F\u2DE0-\u2DFF\uA640-\uA69F\u1D2B\u1D78\u00C5\u00E5\u00C6\u00E6\u00D8\u00F8.?:&=()#\"]+'
+    <chars> = !image-mark '!' | #'[a-zA-Z0-9-_,';\ud83c\udf00-\udfff|\ud83d\udc00-\ude4f\ude80-\udeff\udc00-\uddff\u0100-\u024F\u0400-\u04FF\u0500-\u052F\u2DE0-\u2DFF\uA640-\uA69F\u1D2B\u1D78\u00C5\u00E5\u00C6\u00E6\u00D8\u00F8.?:&=()#\"]+'
     <whitespace> = space | tab
     <space> = ' '
     <tab> = '\t'
     <sol> = #'(?m)^'
     <eol> = '\n' | '\r' | '\r\n'"
-   :start :markdown
-   :string-ci true
-   :output-format :hiccup))
+    :start :markdown
+    :string-ci true
+    :output-format :hiccup))
 
 (defn- merge-consecutive-strings
   "Merges adjacent string elements in a sequence into a single string.
@@ -166,36 +167,36 @@
 
   (def markdown
     (str/join "\n"
-              ["# First heading with *emphasis*"
-               "##### Fift level heading"
-               "Regular text with **strong** and ~~strikethrough~~ emphasis."
-               ""
-               ""
-               "Text that spans "
-               "multiple"
-               "lines."
-               "****"
-               ""
-               "![some image](https://example.com)"
-               ""
-               "Example of an inline [link](https://example.com/). "
-               "Note that links can have a title attribute [link with title](https://example.com/ \"Some title\")"
-               ""
-               "- Item 1"
-               "- Item 2"
-               "- Item 3"
-               ""
-               "- [ ] Task 1"
-               "- [X] Task 2"
-               ""
-               "We can have inline `code`."
-               "```clojure"
-               "(str \"And of course, blocks of code\")"
-               "```"
-               ""
-               "> We prefix lines with `>` to have block-quotes"
-               "> Block quotes support all kinds of *formatting*, even"
-               "> # Headings"]))
+      ["# First heading with *emphasis*"
+       "##### Fift level heading"
+       "Regular text with **strong** and ~~strikethrough~~ emphasis."
+       ""
+       ""
+       "Text that spans "
+       "multiple"
+       "lines."
+       "****"
+       ""
+       "![some image](https://example.com)"
+       ""
+       "Example of an inline [link](https://example.com/). "
+       "Note that links can have a title attribute [link with title](https://example.com/ \"Some title\")"
+       ""
+       "- Item 1"
+       "- Item 2"
+       "- Item 3"
+       ""
+       "- [ ] Task 1"
+       "- [X] Task 2"
+       ""
+       "We can have inline `code`."
+       "```clojure"
+       "(str \"And of course, blocks of code\")"
+       "```"
+       ""
+       "> We prefix lines with `>` to have block-quotes"
+       "> Block quotes support all kinds of *formatting*, even"
+       "> # Headings"]))
 
   ;; markdown -> hiccup
   (markdown->hiccup markdown)
@@ -205,3 +206,10 @@
     (if (insta/failure? result)
       (throw (js/Error. (with-out-str (fail/pprint-failure result))))
       result)))
+
+
+(comment
+
+  (markdown->hiccup "Works")
+
+  ,)
