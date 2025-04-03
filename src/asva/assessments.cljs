@@ -34,16 +34,24 @@
 	    ::completed? true})}))
 
 (defn- chapter [shortcode]
-  (-> shortcode (subs 1) (str/split ".") first edn/read-string))
+  (try
+    (-> shortcode
+        name
+        (subs 1)
+        (str/split #"\.")
+        first
+        edn/read-string)
+    (catch :default _
+      (js/console.warn "Invalid shortcode format:" shortcode)
+      nil)))
 
 (def memoized-chapter (memoize chapter))
 
 (defn enrich-item
-  "Check item and enrich it if it contains :shortcode or :req-id."
   [item]
   (cond
-    (:shortcode item) (assoc item :chapter (memoized-chapter (slug-key (:shortcode item))))
-    (:req-id item) (assoc item :chapter (memoized-chapter (:req-id item)))
+    (:shortcode item) (assoc item :chapter (memoized-chapter (:shortcode item)))
+    (:req-id item)    (assoc item :chapter (memoized-chapter (:req-id item)))
     :else item))
 
 (defn enrich-nested-items
@@ -161,10 +169,13 @@
 
 (re-frame/reg-sub
  ::grouped-items
-  :<- [::filtered-items]
-  (fn [items]
-    (let [items (group-by :chapter items)]
-      (->> items sort))))
+ :<- [::filtered-items]
+ (fn [items]
+   ;; `:chapter` must be an int
+   (let [items (->> items
+                    (filter #(number? (:chapter %))) ; ignore broken items
+                    (group-by :chapter))]
+     (sort-by key items))))
 
 (defn assessment [{:keys [shortcode description progress notes cwe nist last-updated]}]
   (let [query (re-frame/subscribe [::query])
@@ -204,7 +215,7 @@
 
 (defn- scroll-to-hash []
   (let [hash (-> js/window.location.hash (subs 1))]
-    (when (not (empty? hash))
+    (when (seq hash)
       (js/scrollTo
 	{:left 0
 	 :top (.-offsetTop (js/document.getElementById hash))
@@ -221,9 +232,9 @@
 	  [:div.fade]
 	  [:ol
 	   (for [[n items] grouped-items]
-	     (let [{:keys [name]} (nth chapters (dec n))]
-	       [:li {:key (slug :assessment n) :id n}
-		[:h1.DNV name]
-		(for [item items]
+             (let [{:keys [name]} (some #(when (= (:ordinal %) n) %) chapters)]
+               [:li {:key (slug :assessment n) :id n}
+                [:h1.DNV name]
+                (for [item items]
                   ^{:key (:shortcode item)}
                    [assessment item])]))]]))}))

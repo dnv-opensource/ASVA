@@ -65,7 +65,7 @@
     <word> = (formatting | link | chars)+ / whitespace
 
     (* Support for extended Latin, Cyrillic, Greek & Emoji's *)
-    <chars> = !image-mark '!' | #'[a-zA-Z0-9-_,';\ud83c\udf00-\udfff|\ud83d\udc00-\ude4f\ude80-\udeff\udc00-\uddff\u0100-\u024F\u0400-\u04FF\u0500-\u052F\u2DE0-\u2DFF\uA640-\uA69F\u1D2B\u1D78\u00C5\u00E5\u00C6\u00E6\u00D8\u00F8.?:&=()#\"]+'
+    <chars> = !image-mark '!' | #'[a-zA-Z0-9-_,;\ud83c\udf00-\udfff|\ud83d\udc00-\ude4f\ude80-\udeff\udc00-\uddff\u0100-\u024F\u0400-\u04FF\u0500-\u052F\u2DE0-\u2DFF\uA640-\uA69F\u1D2B\u1D78\u00C5\u00E5\u00C6\u00E6\u00D8\u00F8.?:&=()#\"]+'
     <whitespace> = space | tab
     <space> = ' '
     <tab> = '\t'
