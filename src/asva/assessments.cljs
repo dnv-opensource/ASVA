@@ -1,15 +1,15 @@
 (ns asva.assessments
   (:require
-    [asva.components :refer [highlight progress-indicator]]
-    [asva.i18n :refer [t]]
-    [asva.icons :as icons]
-    [asva.utils :refer [<> <sub dispatch>e e> parse-int slug slug-key]]
-    [clojure.edn :as edn]
-    [clojure.string :as str]
-    [clojure.walk :refer [postwalk]]
-    [hiccdown.core :refer [markdown->hiccup]]
-    [re-frame.alpha :as re-frame]
-    [reagent.core :as reagent]))
+   [asva.components :refer [highlight progress-indicator]]
+   [asva.i18n :refer [t]]
+   [asva.icons :as icons]
+   [asva.utils :refer [<> <sub dispatch>e e> parse-int slug slug-key]]
+   [clojure.edn :as edn]
+   [clojure.string :as str]
+   [clojure.walk :refer [postwalk]]
+   [hiccdown.core :refer [markdown->hiccup]]
+   [re-frame.alpha :as re-frame]
+   [reagent.core :as reagent]))
 
 (<> [::asvs
      ::assessments
@@ -87,6 +87,13 @@
       {:db updated-db
        :local-storage [::assessments (get updated-db ::assessments)]})))
 
+(re-frame/reg-event-fx
+  ::not-applicable
+  (fn [{:keys [db]} [_ shortcode not-applicable]]
+    (let [updated-db (assoc-in db [::assessments (slug-key shortcode) :not-applicable] not-applicable)]
+      {:db updated-db
+       :local-storage [::assessments (get updated-db ::assessments)]})))
+
 ;; Both ASVS files and the flat version have the `:requirements` keyword as entry-point.
 (re-frame/reg-sub
  ::requirements
@@ -149,7 +156,7 @@
     (let [transducer (comp
 		       (map #(if-let [assessment (get assessments (slug-key (:shortcode %)))] (merge % assessment) %))
 		       (filter #(level-filter level-1 level-2 level-3 %))
-		       (filter #(not (and (false? not-applicable?) (neg? (:progress %)))))
+                       (filter #(or not-applicable? (not (:not-applicable %))))
 		       (filter #(not (and (not completed?) (= (:progress %) 100))))
 		       (filter #(query-filter query %)))]
       (sequence transducer items))))
@@ -159,8 +166,8 @@
   :<- [::filtered-items]
   (fn [assessments]
     (letfn [(overall-progress [assessments]
-              (let [extract-progress (map #(get % :progress 0))
-                    total (transduce (max 0 extract-progress) + 0 assessments)
+              (let [extract-progress (map #(max 0 (get % :progress 0)))
+                    total (transduce extract-progress + 0 assessments)
                     count (count assessments)]
                 (if (> count 0)
                   (/ total count)
@@ -177,14 +184,15 @@
                     (group-by :chapter))]
      (sort-by key items))))
 
-(defn assessment [{:keys [shortcode description progress notes cwe nist last-updated]}]
+(defn assessment [{:keys [shortcode description progress not-applicable notes cwe nist last-updated]}]
   (let [query (re-frame/subscribe [::query])
         editing? (reagent/atom false)
         note (reagent/atom notes)]
-    (fn [{:keys [shortcode description progress notes cwe nist last-updated]}]
-      (let [url (str (-> js/location .-host) "/#" shortcode)
+    (fn [{:keys [shortcode description progress not-applicable notes cwe nist last-updated] :as tmp}]
+      (let [not-applicable (boolean not-applicable)
+            url (str (-> js/location .-host) "/#" shortcode)
             cwe-url (fn [n] (str "https://cwe.mitre.org/data/definitions/" n ".html"))
-            nist-url (fn [_] (str "https://csrc.nist.gov/pubs/sp/800/53/b/upd1/final"))
+            nist-url (fn [_] "https://csrc.nist.gov/pubs/sp/800/53/b/upd1/final")
             cwe (if (coll? cwe) (first cwe) cwe)
             nist (if (coll? nist) (first nist) nist)]
         [:div.Assessment {:id shortcode}
@@ -193,8 +201,14 @@
 	  [:a {:title (t :copy-location)
 	       :href url :on-click (e> (.preventDefault e)
 				     (-> js/navigator .-clipboard (.writeText url)))}
-	   [icons/link {:class [:small]}]]]
-
+	   [icons/link {:class [:small]}]]
+          [:div.not-applicable
+           [:input {:id (str shortcode "-na")
+                    :checked not-applicable
+                    :type :checkbox
+                    :title (t :not-applicable)
+                    :on-change (dispatch>e [::not-applicable shortcode (not not-applicable)])}]
+           [:label {:for (str shortcode "-na")} "n/a"]]]
 	 (when last-updated [:small.last-updated.badge (t :last-updated last-updated)])
 	 [:p.description (highlight description @query)]
 	 [:div.horizontal

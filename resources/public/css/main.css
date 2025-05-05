@@ -282,6 +282,24 @@ ul li:not(:has(input)) {
     place-content: center;
     place-items: center;
     text-align: center;
+    .title {
+        font-size: 3vh;
+    }
+    .tagline {
+        font-size: 2vh;
+    }
+    div {
+        max-width: 80ch;
+        text-align: left;
+    }
+    footer {
+        padding: 3vh;
+        bottom: 0;
+        position: fixed;
+    }
+    a {
+        margin-left: 0.5em;
+    }
 }
 
 .Owasp {
@@ -446,6 +464,8 @@ header a:hover {
 }
 
 .Import-export {
+    filter: invert(1);
+    mix-blend-mode: difference;
     display: flex;
     flex-direction: row;
     gap: 1rem;
@@ -544,6 +564,33 @@ header a:hover {
     gap: 1em;
     align-items: flex-start;
     border-bottom: 0.5px solid var(--sandstone-color);
+    .not-applicable {
+        position: absolute;
+        right: 0;
+
+        input {
+            visibility: hidden;
+        }
+        label {
+            display: inline-block;
+            padding: 0.2em 0.4em;
+            background: silver;
+            border-radius: .2em;
+            cursor: pointer;
+            opacity: 0.2;
+            font-family: monospace;
+            font-size: 0.7em;
+            transition: .2s ease;
+        }
+        :checked + label {
+                opacity: 1;
+        }
+        &:hover {
+            label {
+                opacity: 1;
+            }
+        }
+    }
 }
 .Assessment .item {
     display: flex;
@@ -630,4 +677,8 @@ button.primary {
     color: white;
     font-weight: bold;
     padding: 0.5em 1em;
+}
+
+strong {
+    font-weight: 600;
 }

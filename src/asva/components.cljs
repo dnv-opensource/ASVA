@@ -87,20 +87,23 @@
 
 (defn checkbox [& args]
   (let [[params body] (->params args)
-        id (str/join "-" body)]
+        id (str/join "-" body)
+        title (or (:title params) "")]
     [:div.Checkbox
      {:key (str "check-" id)
       :class (into [(when (:disabled params) :disabled)] (:class params))}
      [:input (merge (dissoc params :class) {:id id :type :checkbox})]
      [icons/check]
-     [:label {:for id} body]]))
+     [:label {:for id :title title} body]]))
 
 (defn upload-boundary [& args]
   (let [[params & body] (->params args)
         {:keys [accept accept-types on-upload on-click]
-         :or {on-click (fn [f] (f))}} params
+         :or {on-click (fn [f e] (f e))}} params
         drag-over? (reagent/atom false)
-        trigger-file-dialog (fn [] (.click (js/document.getElementById "hidden-file-input")))
+        trigger-file-dialog (fn [e] (if (= "A" e.target.tagName)
+                                      (e.stopPropagation())
+                                     (.click (js/document.getElementById "hidden-file-input"))))
         valid-file? (fn [file] (contains? accept (.-type file)))]
     (into [:div.Upload (merge {:on-drop (e> (let [files (-> e .-dataTransfer .-files array-seq)
                                                   valid-files (filter valid-file? files)]
@@ -113,7 +116,7 @@
                                                      (reset! drag-over? true)))
                                :on-drag-leave (e> (do (doto e (.stopPropagation) (.preventDefault))
                                                       (reset! drag-over? false)))
-                               :on-click #(on-click trigger-file-dialog)
+                               :on-click #(on-click trigger-file-dialog %)
                                :class [(when @drag-over? :drag-over)]}
                               (dissoc params :accept :accept-types :on-upload))
            [:input#hidden-file-input {:type :file
