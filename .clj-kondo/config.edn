@@ -1,5 +1,0 @@
-{:lint-as {day8.re-frame.tracing/fn-traced clojure.core/fn}
- :linters
- {:clojure-lsp/unused-public-var {:exclude [slurp]}
-  :unresolved-symbol {:exclude [(asva.utils/e>)
-                                (asva.utils/dispatch>e)]}}}
