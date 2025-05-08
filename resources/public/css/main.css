@@ -591,6 +591,18 @@ header a:hover {
             }
         }
     }
+    menu {
+        display: flex;
+        padding: 0;
+        flex-direction: row;
+        gap: 1em;
+        div {
+            display: flex;
+        }
+        .Recurrence-input {
+            transform: translateY(-0.4em);
+        }
+    }
 }
 .Assessment .item {
     display: flex;
@@ -681,4 +693,22 @@ button.primary {
 
 strong {
     font-weight: 600;
+}
+
+.Recurrence-input {
+    display: flex;
+    flex-direction: row;
+    opacity: 1;
+    transition: .2s ease;
+    label {
+        opacity: 0.5;
+        font-size: 0.6em;
+    }
+    div {
+        display: flex;
+        flex-direction: column;
+    }
+    &.hide {
+        opacity: 0;
+    }
 }

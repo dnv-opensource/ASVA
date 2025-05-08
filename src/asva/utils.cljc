@@ -8,16 +8,16 @@
 
 (defn assoc-event-db
   "Associates a value into the given re-frame app-db at a specified path.
-  
+
   Takes a re-frame `db` and `args`, where the last element of `args`
   is the value to associate, and the remaining elements define the
   nested keys at which to place that value.
-  
+
   Usage:
   (re-frame/reg-event-db ::some-event assoc-event-db)
-  
+
   Example:
-  If `db` is {:a {:b {:c 0}}}, and `args` is [:a :b :c 1], 
+  If `db` is {:a {:b {:c 0}}}, and `args` is [:a :b :c 1],
   the resulting db will be {:a {:b {:c 1}}}."
   [db args] (assoc-in db (pop args) (peek args)))
 
@@ -93,7 +93,7 @@
                ~'inner-html (.-innerHTML ~'target)]
            ~@body)))))
 
-;; REVIEW I’m reconsidering the utility of `dispatch>e`. 
+;; REVIEW I’m reconsidering the utility of `dispatch>e`.
 ;;      | While `e>` is beneficial for general event-handler scenarios, `dispatch>e` is
 ;;      | limited to situations where a re-frame event is dispatched. This could be
 ;;      | efficiently handled with `(e> (dispatch [:key]))`, provided we adhere to the
@@ -132,6 +132,8 @@
 
 (defn key->prop [key]
   (kebab-to-pascal (name key)))
+
+#?(:cljs (defn now [] (.toISOString (js/Date.))))
 
 #?(:cljs (defn ->clj [x] (bean/->clj x :prop->key prop->key :key->prop key->prop)))
 #?(:cljs (defn ->js [x] (bean/->js x :prop->key prop->key :key->prop key->prop)))

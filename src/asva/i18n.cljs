@@ -90,7 +90,9 @@
     :12-hour (tongue/inst-formatter "{hour12}" inst-strings-en)
     :two-decimals (fn [num] (format-number-en (round-to-decimals num 2)))
     :percent (fn [num] (str (format-number-en (round-to-decimals num 2)) "%"))
-    :last-updated (fn [d] (str "Last updated " ((tongue/inst-formatter "{month-long} {day}, {year}" inst-strings-en) d)))
+    :last-modified (fn [d] (str "Last modified " ((tongue/inst-formatter "{month-long} {day}, {year}" inst-strings-en) d)))
+    :registered-version "Registered with ASVS v.{1} at {2}"
+    :recurring "Recurring"
 
     :main-title  "Welcome to Our ASVA Assessment Page"
     :preface-1 "Our mission is to integrate robust security practices into our services. This assessment, aligned with "
@@ -115,6 +117,8 @@
     :file-upload-help "Don't have a file yet?"
     :file-upload-download "Download the latest ASVS from OWASP"
 
+    :every "Every"
+    :time-span "Time span"
     :search "Search..."
     :copy-location "Copy location of anchor to your clipboard"
     :level "Level {1}"
@@ -140,7 +144,7 @@
     :failed-reading "Error reading the ASVS file. Check if the file exists, is accessible, and is in JSON format."}
 
    :nb
-   {:last-updated (fn [d] (str "Sist oppdatert " ((tongue/inst-formatter "{day}. {month-long} {year}" inst-strings-no) d)))
+   {:last-modified (fn [d] (str "Sist oppdatert " ((tongue/inst-formatter "{day}. {month-long} {year}" inst-strings-no) d)))
     :main-title "Velkommen til vår ASVA-vurderingsside"
     :preface-1 "Vår misjon er å integrere robuste sikkerhetspraksiser i våre tjenester. Denne vurderingen, i tråd med "
     :preface-link-1 "OWASPs ASVA-retningslinjer"
@@ -189,7 +193,7 @@
 
 
    :nl
-   {:last-updated (fn [d] (str "Laatst bijgewerkt " ((tongue/inst-formatter "{day} {month-long} {year}" inst-strings-nl) d)))
+   {:last-modified (fn [d] (str "Laatst bijgewerkt " ((tongue/inst-formatter "{day} {month-long} {year}" inst-strings-nl) d)))
     :main-title "Welkom op onze ASVA-beoordelingspagina"
     :preface-1 "Onze missie is om robuuste beveiligingspraktijken te integreren in onze services. Deze beoordeling, in lijn met "
     :preface-link-1 "OWASP's ASVA-richtlijnen"
@@ -227,7 +231,7 @@
     :config "Configuratie"}
 
    :pt
-   {:last-updated (fn [d] (str "Última atualização " ((tongue/inst-formatter "{day} de {month-long} de {year}" inst-strings-pt) d)))
+   {:last-modified (fn [d] (str "Última atualização " ((tongue/inst-formatter "{day} de {month-long} de {year}" inst-strings-pt) d)))
     :main-title "Bem-vindo à nossa Página de Avaliação ASVA"
     :preface-1 "Nossa missão é integrar práticas de segurança robustas aos nossos serviços. Esta avaliação, alinhada com "
     :preface-link-1 "as diretrizes da ASVA da OWASP"
@@ -265,7 +269,7 @@
     :config "Configuração"}
 
    :es
-   {:last-updated (fn [d] (str "Última actualización " ((tongue/inst-formatter "{day} de {month-long} de {year}" inst-strings-es) d)))
+   {:last-modified (fn [d] (str "Última actualización " ((tongue/inst-formatter "{day} de {month-long} de {year}" inst-strings-es) d)))
     :main-title "Bienvenido a nuestra página de evaluación ASVA"
     :preface-1 "Nuestra misión es integrar prácticas de seguridad robustas en nuestros servicios. Esta evaluación, alineada con "
     :preface-link-1 "las pautas de ASVA de OWASP"
@@ -303,7 +307,7 @@
     :config "Configuración"}
 
    :ko
-   {:last-updated (fn [d] (str "마지막 업데이트 " ((tongue/inst-formatter "{year}년 {month-long} {day}일" inst-strings-ko) d)))
+   {:last-modified (fn [d] (str "마지막 업데이트 " ((tongue/inst-formatter "{year}년 {month-long} {day}일" inst-strings-ko) d)))
     :main-title "우리 ASVA 평가 페이지에 오신 것을 환영합니다"
     :preface-1 "우리의 사명은 우리 서비스에 강력한 보안 관행을 통합하는 것입니다. 이 평가는"
     :preface-link-1 "OWASP의 ASVA 가이드라인"

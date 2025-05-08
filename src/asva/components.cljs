@@ -4,7 +4,8 @@
    [asva.icons :as icons]
    [asva.utils :refer [->params e>]]
    [clojure.string :as str]
-   [reagent.core :as reagent]))
+   [reagent.core :as reagent]
+   [reagent.core :as r]))
 
 (defn progress-indicator [& args]
   (let [[{:keys [on-progress width]
@@ -128,3 +129,32 @@
              [:div.Upload-message
               [:h1 (t :drop-to-upload)]])]
           body)))
+
+(defn recurrence-input [{:keys [value on-change] :as params}]
+  (let [{:keys [every unit]
+         :or {every 0 unit :month}} value
+        local-state (r/atom {:every every :unit unit})]
+    (fn [{:keys [on-change] :as params}]
+      (let [params (dissoc params :on-change :value)]
+       [:div.Recurrence-input params
+        [:div
+         [:label (t :every)]
+         [:input {:type      :number
+                  :min       0
+                  :size      3
+                  :value     (:every @local-state)
+                  :on-change (fn [e]
+                               (let [v (js/parseInt (.. e -target -value))]
+                                 (swap! local-state assoc :every v)
+                                 (on-change (assoc @local-state :every v))))}]]
+        [:div
+         [:label (t :time-span)]
+         [:select {:value     (name (:unit @local-state))
+                   :on-change (fn [e]
+                                (let [v (keyword (.. e -target -value))]
+                                  (swap! local-state assoc :unit v)
+                                  (on-change (assoc @local-state :unit v))))}
+          [:option {:value :day} "Day"]
+          [:option {:value :week} "Week"]
+          [:option {:value :month} "Month"]
+          [:option {:value :year} "Year"]]]]))))

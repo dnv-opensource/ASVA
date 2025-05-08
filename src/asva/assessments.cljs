@@ -1,9 +1,9 @@
 (ns asva.assessments
   (:require
-   [asva.components :refer [highlight progress-indicator]]
+   [asva.components :refer [highlight progress-indicator recurrence-input]]
    [asva.i18n :refer [t]]
    [asva.icons :as icons]
-   [asva.utils :refer [<> <sub dispatch>e e> parse-int slug slug-key]]
+   [asva.utils :refer [<> <sub dispatch>e e> parse-int slug slug-key now]]
    [clojure.edn :as edn]
    [clojure.string :as str]
    [clojure.walk :refer [postwalk]]
@@ -75,7 +75,13 @@
 (re-frame/reg-event-fx
   ::notes
   (fn [{:keys [db]} [_ shortcode notes]]
-    (let [updated-db (assoc-in db [::assessments (slug-key shortcode) :notes] notes)]
+    (let [last-modified (now)
+          updated-db (update-in db [::assessments (slug-key shortcode)]
+                       (fn [assessment]
+                         (merge assessment
+                           {:asvs-version (-> db ::asvs :version)
+                            :notes notes
+                            :last-modified last-modified})))]
       {:db updated-db
        :local-storage [::assessments (get updated-db ::assessments)]})))
 
@@ -83,14 +89,38 @@
   ::progress
   (fn [{:keys [db]} [_ shortcode progress]]
     (let [progress (max 0 (min 100 progress))
-          updated-db (assoc-in db [::assessments (slug-key shortcode) :progress] progress)]
+          last-modified (now)
+          updated-db (update-in db [::assessments (slug-key shortcode)]
+                       (fn [assessment]
+                         (merge assessment
+                           {:asvs-version (-> db ::asvs :version)
+                            :progress progress
+                            :last-modified last-modified})))]
       {:db updated-db
        :local-storage [::assessments (get updated-db ::assessments)]})))
 
 (re-frame/reg-event-fx
   ::not-applicable
   (fn [{:keys [db]} [_ shortcode not-applicable]]
-    (let [updated-db (assoc-in db [::assessments (slug-key shortcode) :not-applicable] not-applicable)]
+    (let [last-modified (now)
+          updated-db (update-in db [::assessments (slug-key shortcode)]
+                       (fn [assessment]
+                         (merge assessment
+                           {:asvs-version (-> db ::asvs :version)
+                            :not-applicable not-applicable
+                            :last-modified last-modified})))]
+      {:db updated-db
+       :local-storage [::assessments (get updated-db ::assessments)]})))
+
+(re-frame/reg-event-fx
+  ::recurrence
+  (fn [{:keys [db]} [_ shortcode recurrence]]
+    (let [updated-db (update-in db [::assessments (slug-key shortcode)]
+                       (fn [assessment]
+                         (merge assessment
+                           {:asvs-version (-> db ::asvs :version)
+                            :last-modified (now)
+                            :recurring recurrence})))]
       {:db updated-db
        :local-storage [::assessments (get updated-db ::assessments)]})))
 
@@ -184,11 +214,12 @@
                     (group-by :chapter))]
      (sort-by key items))))
 
-(defn assessment [{:keys [shortcode description progress not-applicable notes cwe nist last-updated]}]
+(defn assessment [{:keys [shortcode description progress not-applicable notes cwe nist last-modified asvs-version]}]
   (let [query (re-frame/subscribe [::query])
+        recurrence-input? (reagent/atom false)
         editing? (reagent/atom false)
         note (reagent/atom notes)]
-    (fn [{:keys [shortcode description progress not-applicable notes cwe nist last-updated] :as tmp}]
+    (fn [{:keys [shortcode description progress not-applicable notes cwe nist last-modified asvs-version]}]
       (let [not-applicable (boolean not-applicable)
             url (str (-> js/location .-host) "/#" shortcode)
             cwe-url (fn [n] (str "https://cwe.mitre.org/data/definitions/" n ".html"))
@@ -209,21 +240,27 @@
                     :title (t :not-applicable)
                     :on-change (dispatch>e [::not-applicable shortcode (not not-applicable)])}]
            [:label {:for (str shortcode "-na")} "n/a"]]]
-	 (when last-updated [:small.last-updated.badge (t :last-updated last-updated)])
+	 (when last-modified
+           [:small.last-modified.badge {:title (t :registered-version asvs-version (js/Date. last-modified))}
+            (t :last-modified (js/Date. last-modified))])
 	 [:p.description (highlight description @query)]
 	 [:div.horizontal
 	  (when (some? cwe) [:a.badge.warning {:target :_blank :title :cwe :rel :noopener :href (cwe-url cwe)} cwe])
 	  (when (some? nist) [:a.badge {:target :_blank :title :nist :rel :noopener :href (nist-url nist)} nist])]
+	 [:menu
+          (when-not @editing?
+	    [:button {:title (t :assessment-notes) :on-click (e> (reset! editing? true))} [icons/note]])
+          [:div
+           [:button {:title (t :recurring) :on-click #(swap! recurrence-input? not)} [icons/recurring]]]
+          [recurrence-input {:class [(when-not @recurrence-input? :hide)] :on-change #(re-frame/dispatch [::recurrence shortcode %])}]]
 	 [:div.Markdown
 	  (if @editing?
 	    [:<>
 	     [:textarea {:auto-focus true :placeholder (t :assessment-notes) :value @note :on-change (e> (reset! note value))}]
 	     [:a {:href "https://www.markdownguide.org/basic-syntax/" :target :_blank :rel :noopener}
-	      [icons/markdown {:title (t :markdown-support)}]]]
+	      [icons/markdown {:title (t :markdown-support)}]]
+             [:button.primary {:on-click (dispatch>e (do (reset! editing? false) [::notes shortcode @note]))} "Save"]]
 	    [markdown->hiccup notes])]
-	 (if @editing?
-	   [:button.primary {:on-click (dispatch>e (do (reset! editing? false) [::notes shortcode @note]))} "Save"]
-	   [:button {:title (t :assessment-notes) :on-click (e> (reset! editing? true))} [icons/note]])
 	 [progress-indicator {:width 40
 			      :on-progress (fn [prog] (re-frame/dispatch [::progress shortcode prog]))} progress]]))))
 
