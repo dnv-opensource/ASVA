@@ -47,12 +47,13 @@
 
 (def memoized-chapter (memoize chapter))
 
-(defn enrich-item
-  [item]
-  (cond
-    (:shortcode item) (assoc item :chapter (memoized-chapter (:shortcode item)))
-    (:req-id item)    (assoc item :chapter (memoized-chapter (:req-id item)))
-    :else item))
+(defn enrich-item [item]
+  (cond-> item
+    (:shortcode item)
+    (assoc :chapter (memoized-chapter (:shortcode item)))
+
+    (and (not (:shortcode item)) (:req-id item))
+    (assoc :chapter (memoized-chapter (:req-id item)))))
 
 (defn enrich-nested-items
   "Apply `enrich-item` to every element in the innermost nested structure."
@@ -162,9 +163,14 @@
   (str/includes? (str/lower-case (or item " ")) (str/lower-case query)))
 
 (defn level-filter [level-1 level-2 level-3 item]
-  (or (and (true? level-1) (or (true? (-> item :l1 :required)) (= "✓" (:level1 item))))
-      (and (true? level-2) (or (true? (-> item :l2 :required)) (= "✓" (:level2 item))))
-      (and (true? level-3) (or (true? (-> item :l3 :required)) (= "✓" (:level3 item))))))
+  (or (and (:l item)
+        (or
+          (and (true? level-1) (>= (:l item) 1))
+          (and (true? level-2) (>= (:l item) 2))
+          (and (true? level-3) (= (:l item) 3))))
+    (and (true? level-1) (or (true? (-> item :l1 :required)) (= "✓" (:level1 item))))
+    (and (true? level-2) (or (true? (-> item :l2 :required)) (= "✓" (:level2 item))))
+    (and (true? level-3) (or (true? (-> item :l3 :required)) (= "✓" (:level3 item))))))
 
 (defn query-filter [query {:keys [description req-description]}]
   (if (not-empty query)
