@@ -33,15 +33,15 @@ clojure -M:dev
 Follow the on-screen instructions to access and interact with the application,
 typically running on http://localhost:8080/.
 
-On the initial page, you will be prompted to select a JSON file from
-the available options, which can be found in multiple languages at
-[this GitHub repository](https://github.com/OWASP/ASVS/tree/v4.0.3/4.0). You can choose between a detailed version,
-which includes an introductory section that offers additional context
-and may be customized for your project, and a flat version. Once
-selected, you will access the main application interface. Here, you
-can either import an existing ASVA.json file, if you have one, or make
-adjustments and export a new ASVA.json file. All data is securely
-stored in your browser's local storage.
+On the initial page, you will be prompted to select an ASVS JSON file
+from the available options, which can be found in multiple languages at
+[this GitHub repository](https://github.com/OWASP/ASVS/tree/v4.0.3/4.0).
+ASVA supports the detailed and flat ASVS JSON files, as well as the
+CycloneDX-style `.cdx.json` ASVS format. Once selected, you will access
+the main application interface. Here, you can either import an existing
+ASVA.json file, if you have one, or make adjustments and export a new
+ASVA.json file. All data is securely stored in your browser's local
+storage.
 
 ## License
 

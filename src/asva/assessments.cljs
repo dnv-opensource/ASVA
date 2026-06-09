@@ -3,6 +3,7 @@
    [asva.components :refer [highlight progress-indicator recurrence-input]]
    [asva.i18n :refer [t]]
    [asva.icons :as icons]
+   [asva.asvs :as asvs]
    [asva.utils :refer [<> <sub dispatch>e e> parse-int slug slug-key now]]
    [clojure.edn :as edn]
    [clojure.string :as str]
@@ -20,12 +21,16 @@
      ::completed?
      ::query])
 
+(declare enrich-nested-items)
+
 (re-frame/reg-event-fx
   ::initialize
   [(re-frame/inject-cofx :local-storage)]
   (fn [{:keys [db local-storage]} _]
     {:db (merge db
-	   {::asvs (get local-storage :asvs {})
+	   {::asvs (-> (get local-storage :asvs {})
+                    asvs/normalize
+                    enrich-nested-items)
 	    ::assessments (get local-storage :assessments {})
 	    ::level-1 true
 	    ::level-2 true
@@ -63,7 +68,7 @@
 (re-frame/reg-event-fx
   ::asvs
   (fn [{:keys [db]} [k v]]
-    (let [enriched-data (enrich-nested-items v)]
+    (let [enriched-data (-> v asvs/normalize enrich-nested-items)]
       {:db (assoc db k enriched-data)
        :local-storage [k enriched-data]})))
 
@@ -133,6 +138,12 @@
    (get assessment :requirements)))
 
 (re-frame/reg-sub
+ ::has-asvs?
+ :<- [::requirements]
+ (fn [requirements]
+   (boolean (seq requirements))))
+
+(re-frame/reg-sub
  ::introduction
  :<- [::asvs]
  (fn [assessment]
@@ -163,14 +174,18 @@
   (str/includes? (str/lower-case (or item " ")) (str/lower-case query)))
 
 (defn level-filter [level-1 level-2 level-3 item]
-  (or (and (:l item)
+  (let [has-levels? (or (:l item)
+                      (:l1 item) (:l2 item) (:l3 item)
+                      (:level1 item) (:level2 item) (:level3 item))]
+    (or (not has-levels?)
+      (and (:l item)
         (or
-          (and (true? level-1) (>= (:l item) 1))
-          (and (true? level-2) (>= (:l item) 2))
-          (and (true? level-3) (= (:l item) 3))))
-    (and (true? level-1) (or (true? (-> item :l1 :required)) (= "✓" (:level1 item))))
-    (and (true? level-2) (or (true? (-> item :l2 :required)) (= "✓" (:level2 item))))
-    (and (true? level-3) (or (true? (-> item :l3 :required)) (= "✓" (:level3 item))))))
+         (and (true? level-1) (>= (:l item) 1))
+         (and (true? level-2) (>= (:l item) 2))
+         (and (true? level-3) (= (:l item) 3))))
+      (and (true? level-1) (or (true? (-> item :l1 :required)) (= "✓" (:level1 item))))
+      (and (true? level-2) (or (true? (-> item :l2 :required)) (= "✓" (:level2 item))))
+      (and (true? level-3) (or (true? (-> item :l3 :required)) (= "✓" (:level3 item)))))))
 
 (defn query-filter [query {:keys [description req-description]}]
   (if (not-empty query)

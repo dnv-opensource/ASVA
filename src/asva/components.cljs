@@ -105,7 +105,12 @@
         trigger-file-dialog (fn [e] (if (= "A" e.target.tagName)
                                       (e.stopPropagation())
                                      (.click (js/document.getElementById "hidden-file-input"))))
-        valid-file? (fn [file] (contains? accept (.-type file)))]
+        valid-extension? (fn [file]
+                           (let [file-name (str/lower-case (.-name file))]
+                             (some #(str/ends-with? file-name (str/lower-case %)) accept)))
+        valid-file? (fn [file]
+                      (or (contains? accept-types (.-type file))
+                        (valid-extension? file)))]
     (into [:div.Upload (merge {:on-drop (e> (let [files (-> e .-dataTransfer .-files array-seq)
                                                   valid-files (filter valid-file? files)]
                                               (doto e (.stopPropagation) (.preventDefault))

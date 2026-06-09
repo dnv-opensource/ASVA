@@ -64,12 +64,20 @@
                           (set! (.-hash js/location) ordinal))}
           short-name]])]]))
 
+(defn- parse-json [text]
+  (try
+    (some-> text js/JSON.parse ->clj)
+    (catch :default e
+      (js/console.warn "Failed to parse JSON file:" e)
+      nil)))
+
 (defn- read-asvs-file [file]
   (re-frame/dispatch [:loading :inc])
   (let [reader (js/FileReader.)]
-    (set! (.-onload reader) (dispatch>e (if-let [asvs (-> target .-result js/JSON.parse ->clj)]
-                                          [::assessments/asvs asvs]
-                                          [::notifications/add (t :failed-parsing)])))
+    (set! (.-onload reader) (e> (re-frame/dispatch-sync
+                                  (if-let [asvs (parse-json (.-result target))]
+                                    [::assessments/asvs asvs]
+                                    [::notifications/add (t :failed-parsing)]))))
     (set! (.-onerror reader) (dispatch>e [::notifications/add (t :failed-reading)]))
     (set! (.-onloadend reader) (dispatch>e [:loading :dec]))
     (.readAsText reader file)))
@@ -77,7 +85,7 @@
 (defn- read-assessments-file [file]
   (re-frame/dispatch [:loading :inc])
   (let [reader (js/FileReader.)]
-    (set! (.-onload reader) (dispatch>e (if-let [assessments-json (-> target .-result js/JSON.parse ->clj)]
+    (set! (.-onload reader) (dispatch>e (if-let [assessments-json (parse-json (.-result target))]
                                           [::assessments/assessments assessments-json]
                                           [::notifications/add (t :failed-parsing)])))
     (set! (.-onerror reader) (dispatch>e [::notifications/add (t :failed-reading)]))
@@ -107,14 +115,14 @@
 (defn- app []
   [:main {:class (if (<sub [:loading?]) :loading :loaded)}
    [notifications/view]
-   (if-let [all-assessments (<sub [::assessments/items])]
+   (if (<sub [::assessments/has-asvs?])
      [:<>
       [header]
       [search]
       [table-of-contents]
       [import-export]
       [assessments/view]]
-     [upload-boundary {:accept [".json"]
+     [upload-boundary {:accept [".json" ".cdx.json"]
 		       :accept-types #{"application/json"}
 		       :on-upload #(read-asvs-file (first %))}
       [:div
