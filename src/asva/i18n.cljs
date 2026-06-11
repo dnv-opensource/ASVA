@@ -108,6 +108,7 @@
     :assessment-notes "Notes on compliance, risks, and mitigation strategies"
     :export-assessments "Export your ASVA assessment file (JSON)"
     :import-assessments "Import a previously exported ASVA assessment file (JSON)"
+    :import-associations "Import ASVS association mappings (CWE JSON or NIST Markdown)"
     :markdown-support "This textarea supports markdown formatting"
 
     :file-upload-title "Welcome to ASVA"
@@ -161,11 +162,11 @@
 
     :export-assessments "Eksporter ASVA-vurderingsfilen din (JSON)"
     :import-assessments "Importer en tidligere eksportert ASVA-vurderingsfil (JSON)"
+    :import-associations "Importer ASVS-koblinger (CWE JSON eller NIST Markdown)"
 
     :info-level-1 "Grunnleggende sikkerhet for all programvare"
     :info-level-2 "For applikasjoner som håndterer sensitive data eller har moderat risiko"
     :info-level-3 "For kritiske systemer som krever høyeste grad av sikkerhet"
-
 
     :failed-parsing "Feil ved parsing av ASVS-filen. Sørg for at filen er i korrekt JSON-format og sjekk for syntaksfeil."
     :failed-reading "Feil ved lesing av ASVS-filen. Kontroller at filen eksisterer, er tilgjengelig, og er i JSON-format."
@@ -191,7 +192,6 @@
     :api "API"
     :config "Konfigurasjon"}
 
-
    :nl
    {:last-modified (fn [d] (str "Laatst bijgewerkt " ((tongue/inst-formatter "{day} {month-long} {year}" inst-strings-nl) d)))
     :main-title "Welkom op onze ASVA-beoordelingspagina"
@@ -205,6 +205,7 @@
     :level "Niveau {1}"
     :export-assessments "Exporteer je ASVA-beoordelingsbestand (JSON)"
     :import-assessments "Importeer een eerder geëxporteerd ASVA-beoordelingsbestand (JSON)"
+    :import-associations "Importeer ASVS-koppelingen (CWE JSON of NIST Markdown)"
     :file-upload-title "Welkom bij ASVA"
     :file-upload-intro "Een tool voor Application Security Verification Assessments, met lokaal opgeslagen voortgang."
     :file-upload-info "Sleep en zet neer of klik om een bestand te kiezen"
@@ -243,6 +244,7 @@
     :level "Nível {1}"
     :export-assessments "Exportar seu arquivo de avaliação ASVA (JSON)"
     :import-assessments "Importar um arquivo de avaliação ASVA exportado anteriormente (JSON)"
+    :import-associations "Importar associações ASVS (CWE JSON ou NIST Markdown)"
     :file-upload-title "Bem-vindo ao ASVA"
     :file-upload-intro "Uma ferramenta para Avaliações de Verificação de Segurança de Aplicações, com progresso salvo localmente."
     :file-upload-info "Arraste e solte ou clique para escolher um arquivo para upload"
@@ -282,6 +284,7 @@
     :not-applicable "No aplicable"
     :export-assessments "Exporta tu archivo de evaluación ASVA (JSON)"
     :import-assessments "Importa un archivo de evaluación ASVA exportado previamente (JSON)"
+    :import-associations "Importar asociaciones ASVS (CWE JSON o NIST Markdown)"
     :file-upload-title "Bienvenido a ASVA"
     :file-upload-intro "Una herramienta para Evaluaciones de Verificación de Seguridad de Aplicaciones, con progreso guardado localmente."
     :file-upload-info "Arrastra y suelta o haz clic para elegir un archivo"
@@ -325,6 +328,7 @@
     :level "수준 {1}"
     :export-assessments "ASVA 평가 파일을 내보내기 (JSON)"
     :import-assessments "이전에 내보낸 ASVA 평가 파일 가져오기 (JSON)"
+    :import-associations "ASVS 연결 정보 가져오기 (CWE JSON 또는 NIST Markdown)"
     :not-applicable "해당 없음"
     :completed "완료됨"
     :architecture "건축"

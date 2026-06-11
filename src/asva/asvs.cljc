@@ -1,11 +1,12 @@
 (ns asva.asvs
   (:require
+   [clojure.walk :refer [postwalk]]
    [clojure.string :as str]))
 
 (defn- numeric-parts [identifier]
   (some->> identifier
-    (re-seq #"\d+")
-    (mapv #?(:clj parse-long :cljs js/parseInt))))
+           (re-seq #"\d+")
+           (mapv #?(:clj parse-long :cljs js/parseInt))))
 
 (defn- natural-compare [a b]
   (compare [(or (numeric-parts (:shortcode a)) []) (:shortcode a)]
@@ -24,19 +25,19 @@
 
 (defn- chapter-short-name [title]
   (-> (or title "")
-    (str/split #",")
-    first
-    str/trim))
+      (str/split #",")
+      first
+      str/trim))
 
 (defn- requirement-depth [{:keys [identifier]}]
   (count (numeric-parts identifier)))
 
 (defn- level-requirement-set [levels level]
   (->> levels
-    (filter #(= (str "Level " level) (:identifier %)))
-    first
-    :requirements
-    set))
+       (filter #(= (str "Level " level) (:identifier %)))
+       first
+       :requirements
+       set))
 
 (defn- cdx-requirement->item [levels {:keys [identifier text]}]
   (let [level (cond
@@ -76,26 +77,26 @@
      :description description
      :requirements
      (->> chapters
-       (map (fn [chapter]
-              (let [children (get by-parent (:identifier chapter))
-                    sections (filter section-requirement? children)
-                    direct-items (filter item-requirement? children)
-                    section-items (cond-> (map (fn [section]
-                                                 (cdx-requirement->section
-                                                   section
-                                                   (map (partial cdx-requirement->item levels)
-                                                     (filter item-requirement?
-                                                       (get by-parent (:identifier section))))))
-                                           sections)
-                                    (seq direct-items)
-                                    (conj (cdx-requirement->section
-                                            chapter
-                                            (map (partial cdx-requirement->item levels) direct-items))))]
-                (cdx-requirement->chapter
-                  chapter
-                  section-items))))
-       (sort natural-compare)
-       vec)}))
+          (map (fn [chapter]
+                 (let [children (get by-parent (:identifier chapter))
+                       sections (filter section-requirement? children)
+                       direct-items (filter item-requirement? children)
+                       section-items (cond-> (map (fn [section]
+                                                    (cdx-requirement->section
+                                                     section
+                                                     (map (partial cdx-requirement->item levels)
+                                                          (filter item-requirement?
+                                                                  (get by-parent (:identifier section))))))
+                                                  sections)
+                                       (seq direct-items)
+                                       (conj (cdx-requirement->section
+                                              chapter
+                                              (map (partial cdx-requirement->item levels) direct-items))))]
+                   (cdx-requirement->chapter
+                    chapter
+                    section-items))))
+          (sort natural-compare)
+          vec)}))
 
 (defn normalize
   "Converts supported ASVS JSON shapes into the nested structure ASVA uses."
@@ -103,3 +104,49 @@
   (cond
     (cdx-format? asvs) (normalize-cdx asvs)
     :else asvs))
+
+(defn- shortcode [s]
+  (when-let [identifier (some->> s str (re-seq #"\d+(?:\.\d+)+") last)]
+    (str "V" identifier)))
+
+(defn- present? [s]
+  (not (str/blank? (str s))))
+
+(defn- cwe-associations [mapping]
+  (->> mapping
+       (keep (fn [[k v]]
+               (when-let [shortcode (shortcode k)]
+                 [shortcode {:cwe v}])))
+       (into {})))
+
+(defn- split-nist-references [s]
+  (->> (str/split (str s) #"\s*(?:,|/)\s*")
+       (map str/trim)
+       (filter present?)
+       vec))
+
+(defn- nist-associations [markdown]
+  (->> (str/split-lines markdown)
+       (keep (fn [line]
+               (let [[_ requirement references] (re-matches #"\|\s*\*\*([^*]+)\*\*\s*\|\s*([^|]*?)\s*\|" line)]
+                 (when (and requirement (present? references))
+                   (when-let [shortcode (shortcode requirement)]
+                     [shortcode {:nist (split-nist-references references)}])))))
+       (into {})))
+
+(defn associations
+  "Converts known ASVS mapping files into shortcode-keyed item associations."
+  [mapping]
+  (cond
+    (map? mapping) (cwe-associations mapping)
+    (string? mapping) (nist-associations mapping)
+    :else {}))
+
+(defn merge-associations [asvs mapping]
+  (let [associations (associations mapping)]
+    (postwalk
+     (fn [x]
+       (if-let [item-associations (and (map? x) (get associations (:shortcode x)))]
+         (merge x item-associations)
+         x))
+     asvs)))

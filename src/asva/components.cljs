@@ -9,80 +9,80 @@
 
 (defn progress-indicator [& args]
   (let [[{:keys [on-progress width]
-	  :or {width 96} :as params} percent] (->params args)
-	not-applicable? (= percent -1)
-	stroke-width (max 6 (* width 0.1))
-	radius (- width stroke-width)
-	svg-center (+ radius stroke-width)
-	size (+ (* svg-center 2) (* stroke-width 2))
-	circumference (* 2 Math/PI radius)
-	initial-offset circumference
-	progress-offset (* circumference (/ (min 100 (max 0 (if (js/isNaN percent) 0 percent))) 100))
-	final-offset (- initial-offset progress-offset)
-	dragging (atom false)
-	start-coord (atom nil)
-	mouse-up-ref (atom nil)
-	handle-on-click (fn []
-			  (cond
-			    (< percent 0) (on-progress 0)
-			    (< percent 25)  (on-progress 25)
-			    (< percent 50)  (on-progress 50)
-			    (< percent 75)  (on-progress 75)
-			    (< percent 100) (on-progress 100)
-			    (= percent 100) (on-progress -1)
-			    :else           (on-progress 0)))
+          :or {width 96} :as params} percent] (->params args)
+        not-applicable? (= percent -1)
+        stroke-width (max 6 (* width 0.1))
+        radius (- width stroke-width)
+        svg-center (+ radius stroke-width)
+        size (+ (* svg-center 2) (* stroke-width 2))
+        circumference (* 2 Math/PI radius)
+        initial-offset circumference
+        progress-offset (* circumference (/ (min 100 (max 0 (if (js/isNaN percent) 0 percent))) 100))
+        final-offset (- initial-offset progress-offset)
+        dragging (atom false)
+        start-coord (atom nil)
+        mouse-up-ref (atom nil)
+        handle-on-click (fn []
+                          (cond
+                            (< percent 0) (on-progress 0)
+                            (< percent 25)  (on-progress 25)
+                            (< percent 50)  (on-progress 50)
+                            (< percent 75)  (on-progress 75)
+                            (< percent 100) (on-progress 100)
+                            (= percent 100) (on-progress -1)
+                            :else           (on-progress 0)))
 
-	handle-mouse-move (e> (when @dragging
-				(let [y-pos (-> e .-clientY)
-				      old-y-pos @start-coord]
-				  (on-progress (if (nil? old-y-pos) y-pos (- old-y-pos y-pos))))))
-	handle-mouse-up (e>
-			  (when (= @start-coord (-> e .-clientY))
-			    (handle-on-click))
-			  (reset! dragging false)
-			  (reset! start-coord nil)
-			  (.removeEventListener js/document "mousemove" handle-mouse-move)
-			  (.removeEventListener js/document "mouseup" @mouse-up-ref)
-			  (reset! mouse-up-ref nil))
-	handle-mouse-down (e> (reset! dragging true)
-			    (reset! start-coord (-> e .-clientY))
-			    (.addEventListener js/document "mousemove" handle-mouse-move)
-			    (reset! mouse-up-ref (.addEventListener js/document "mouseup" handle-mouse-up)))]
+        handle-mouse-move (e> (when @dragging
+                                (let [y-pos (-> e .-clientY)
+                                      old-y-pos @start-coord]
+                                  (on-progress (if (nil? old-y-pos) y-pos (- old-y-pos y-pos))))))
+        handle-mouse-up (e>
+                         (when (= @start-coord (-> e .-clientY))
+                           (handle-on-click))
+                         (reset! dragging false)
+                         (reset! start-coord nil)
+                         (.removeEventListener js/document "mousemove" handle-mouse-move)
+                         (.removeEventListener js/document "mouseup" @mouse-up-ref)
+                         (reset! mouse-up-ref nil))
+        handle-mouse-down (e> (reset! dragging true)
+                              (reset! start-coord (-> e .-clientY))
+                              (.addEventListener js/document "mousemove" handle-mouse-move)
+                              (reset! mouse-up-ref (.addEventListener js/document "mouseup" handle-mouse-up)))]
     [:svg.Progress-indicator (merge {:viewBox (str "0 0 " size " " size)
-				     :on-mouse-down handle-mouse-down
-				     :class (when not-applicable? :not-applicable)}
-			       params)
+                                     :on-mouse-down handle-mouse-down
+                                     :class (when not-applicable? :not-applicable)}
+                                    params)
      [:defs
       [:filter#glow [:feGaussianBlur {:stdDeviation 3 :result "coloredBlur"}]
        [:feMerge
-	[:feMergeNode {:in "coloredBlur"}]
-	[:feMergeNode {:in "SourceGraphic"}]]]]
+        [:feMergeNode {:in "coloredBlur"}]
+        [:feMergeNode {:in "SourceGraphic"}]]]]
      [:circle.inactive {:cx svg-center :cy svg-center :r radius :fill "none"
-			:stroke-width stroke-width}]
+                        :stroke-width stroke-width}]
      [:rect {:x stroke-width :y (dec svg-center) :width (- size (* stroke-width 4)) :height stroke-width}]
      [:circle.active {:cx svg-center :cy svg-center :r radius :fill "none"
-		      :stroke-width stroke-width
-		      :stroke-dasharray (str circumference " " circumference)
-		      :stroke-dashoffset (str final-offset)}]
+                      :stroke-width stroke-width
+                      :stroke-dasharray (str circumference " " circumference)
+                      :stroke-dashoffset (str final-offset)}]
      [:title (if not-applicable?
-	       "N/A"
-	       (str percent "%"))]]))
+               "N/A"
+               (str percent "%"))]]))
 
 (defn- -highlight
-       "Returns a sequence of text segments based on the given `query`. Segments that
+  "Returns a sequence of text segments based on the given `query`. Segments that
    match the query are wrapped in a `:mark` hiccup element for styling
    purposes."
   [text query]
   (if (> (count query) 2)
-	   (let [pattern (re-pattern (str "(?i)(" query ")"))
-			 parts (str/split text pattern)]
-	     (into [:<>]
-		   (map (fn [segment]
-			    (if (re-matches pattern segment)
-				[:mark segment]
-			      segment))
-			parts)))
-	 text))
+    (let [pattern (re-pattern (str "(?i)(" query ")"))
+          parts (str/split text pattern)]
+      (into [:<>]
+            (map (fn [segment]
+                   (if (re-matches pattern segment)
+                     [:mark segment]
+                     segment))
+                 parts)))
+    text))
 
 (def highlight (memoize -highlight))
 
@@ -103,14 +103,14 @@
          :or {on-click (fn [f e] (f e))}} params
         drag-over? (reagent/atom false)
         trigger-file-dialog (fn [e] (if (= "A" e.target.tagName)
-                                      (e.stopPropagation())
-                                     (.click (js/document.getElementById "hidden-file-input"))))
+                                      (e.stopPropagation ())
+                                      (.click (js/document.getElementById "hidden-file-input"))))
         valid-extension? (fn [file]
                            (let [file-name (str/lower-case (.-name file))]
                              (some #(str/ends-with? file-name (str/lower-case %)) accept)))
         valid-file? (fn [file]
                       (or (contains? accept-types (.-type file))
-                        (valid-extension? file)))]
+                          (valid-extension? file)))]
     (into [:div.Upload (merge {:on-drop (e> (let [files (-> e .-dataTransfer .-files array-seq)
                                                   valid-files (filter valid-file? files)]
                                               (doto e (.stopPropagation) (.preventDefault))
@@ -141,25 +141,25 @@
         local-state (r/atom {:every every :unit unit})]
     (fn [{:keys [on-change] :as params}]
       (let [params (dissoc params :on-change :value)]
-       [:div.Recurrence-input params
-        [:div
-         [:label (t :every)]
-         [:input {:type      :number
-                  :min       0
-                  :size      3
-                  :value     (:every @local-state)
-                  :on-change (fn [e]
-                               (let [v (js/parseInt (.. e -target -value))]
-                                 (swap! local-state assoc :every v)
-                                 (on-change (assoc @local-state :every v))))}]]
-        [:div
-         [:label (t :time-span)]
-         [:select {:value     (name (:unit @local-state))
+        [:div.Recurrence-input params
+         [:div
+          [:label (t :every)]
+          [:input {:type      :number
+                   :min       0
+                   :size      3
+                   :value     (:every @local-state)
                    :on-change (fn [e]
-                                (let [v (keyword (.. e -target -value))]
-                                  (swap! local-state assoc :unit v)
-                                  (on-change (assoc @local-state :unit v))))}
-          [:option {:value :day} "Day"]
-          [:option {:value :week} "Week"]
-          [:option {:value :month} "Month"]
-          [:option {:value :year} "Year"]]]]))))
+                                (let [v (js/parseInt (.. e -target -value))]
+                                  (swap! local-state assoc :every v)
+                                  (on-change (assoc @local-state :every v))))}]]
+         [:div
+          [:label (t :time-span)]
+          [:select {:value     (name (:unit @local-state))
+                    :on-change (fn [e]
+                                 (let [v (keyword (.. e -target -value))]
+                                   (swap! local-state assoc :unit v)
+                                   (on-change (assoc @local-state :unit v))))}
+           [:option {:value :day} "Day"]
+           [:option {:value :week} "Week"]
+           [:option {:value :month} "Month"]
+           [:option {:value :year} "Year"]]]]))))

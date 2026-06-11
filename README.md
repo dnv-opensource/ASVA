@@ -43,6 +43,11 @@ ASVA.json file, if you have one, or make adjustments and export a new
 ASVA.json file. All data is securely stored in your browser's local
 storage.
 
+For ASVS formats that publish CWE and NIST references separately, use
+the association import action in the main interface to load the CWE JSON
+or NIST Markdown mapping files. Imported associations are merged into
+the current ASVS data and stored locally.
+
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE.md](./LICENSE.md) file for details.
