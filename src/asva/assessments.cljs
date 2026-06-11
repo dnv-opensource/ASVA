@@ -4,6 +4,7 @@
    [asva.i18n :refer [t]]
    [asva.icons :as icons]
    [asva.asvs :as asvs]
+   [asva.notifications :as notifications]
    [asva.utils :refer [<> <sub dispatch>e e> parse-int slug slug-key now]]
    [clojure.edn :as edn]
    [clojure.string :as str]
@@ -68,16 +69,32 @@
 (re-frame/reg-event-fx
  ::asvs
  (fn [{:keys [db]} [k v]]
-   (let [enriched-data (-> v asvs/normalize enrich-nested-items)]
+   (let [enriched-data (-> v asvs/normalize enrich-nested-items)
+         item-count (asvs/item-count enriched-data)
+         enriched-data (assoc enriched-data :import-status
+                              {:asvs {:version (:version enriched-data)
+                                      :items item-count
+                                      :imported-at (now)}})]
      {:db (assoc db k enriched-data)
-      :local-storage [k enriched-data]})))
+      :local-storage [k enriched-data]
+      :dispatch [::notifications/add (t :asvs-imported item-count) :success 4000]})))
 
 (re-frame/reg-event-fx
  ::associations
  (fn [{:keys [db]} [_ mapping]]
-   (let [enriched-data (-> db ::asvs (asvs/merge-associations mapping) enrich-nested-items)]
-     {:db (assoc db ::asvs enriched-data)
-      :local-storage [::asvs enriched-data]})))
+   (let [association-type (asvs/association-type mapping)
+         association-count (count (asvs/associations mapping))
+         enriched-data (-> db ::asvs (asvs/merge-associations mapping) enrich-nested-items
+                           (assoc-in [:import-status :associations association-type]
+                                     {:count association-count
+                                      :imported-at (now)}))]
+     (cond-> {:db (assoc db ::asvs enriched-data)
+              :local-storage [::asvs enriched-data]}
+       (pos? association-count)
+       (assoc :dispatch [::notifications/add (t :associations-imported (name association-type) association-count) :success 4000])
+
+       (zero? association-count)
+       (assoc :dispatch [::notifications/add (t :no-associations-imported) :error])))))
 
 (re-frame/reg-event-fx
  ::assessments
@@ -159,6 +176,12 @@
       :description (:description assessment)})))
 
 (re-frame/reg-sub
+ ::import-status
+ :<- [::asvs]
+ (fn [assessment]
+   (:import-status assessment)))
+
+(re-frame/reg-sub
  ::chapters
  :<- [::requirements]
  (fn [requirements]
@@ -173,9 +196,7 @@
  ::items
  :<- [::requirements]
  (fn [requirements]
-   (if (some? (-> requirements first :short-name))
-     (->> requirements (mapv :items) flatten (mapv :items) flatten)
-     requirements)))
+   (asvs/items {:requirements requirements})))
 
 (defn match-string [query item]
   (str/includes? (str/lower-case (or item " ")) (str/lower-case query)))
@@ -187,8 +208,8 @@
     (or (not has-levels?)
         (and (:l item)
              (or
-              (and (true? level-1) (>= (:l item) 1))
-              (and (true? level-2) (>= (:l item) 2))
+              (and (true? level-1) (= (:l item) 1))
+              (and (true? level-2) (= (:l item) 2))
               (and (true? level-3) (= (:l item) 3))))
         (and (true? level-1) (or (true? (-> item :l1 :required)) (= "✓" (:level1 item))))
         (and (true? level-2) (or (true? (-> item :l2 :required)) (= "✓" (:level2 item))))
@@ -255,7 +276,7 @@
         note (reagent/atom notes)]
     (fn [{:keys [shortcode description progress not-applicable notes cwe nist last-modified asvs-version]}]
       (let [not-applicable (boolean not-applicable)
-            url (str (-> js/location .-host) "/#" shortcode)
+            url (str (-> js/location .-origin) "/#" shortcode)
             cwe-url (fn [n] (str "https://cwe.mitre.org/data/definitions/" n ".html"))
             nist-url (fn [_] "https://pages.nist.gov/800-63-3/sp800-63b.html")]
         [:div.Assessment {:id shortcode}
@@ -303,10 +324,10 @@
 
 (defn- scroll-to-hash []
   (let [hash (-> js/window.location.hash (subs 1))]
-    (when (seq hash)
+    (when-let [target (and (seq hash) (js/document.getElementById hash))]
       (js/scrollTo
        {:left 0
-        :top (.-offsetTop (js/document.getElementById hash))
+        :top (.-offsetTop target)
         :behavior :smooth}))))
 
 (defn view []

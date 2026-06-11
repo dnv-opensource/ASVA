@@ -11,25 +11,27 @@
   (let [[{:keys [on-progress width]
           :or {width 96} :as params} percent] (->params args)
         not-applicable? (= percent -1)
+        progress (min 100 (max 0 (if (number? percent) percent 0)))
+        current-value (if not-applicable? -1 progress)
         stroke-width (max 6 (* width 0.1))
         radius (- width stroke-width)
         svg-center (+ radius stroke-width)
         size (+ (* svg-center 2) (* stroke-width 2))
         circumference (* 2 Math/PI radius)
         initial-offset circumference
-        progress-offset (* circumference (/ (min 100 (max 0 (if (js/isNaN percent) 0 percent))) 100))
+        progress-offset (* circumference (/ progress 100))
         final-offset (- initial-offset progress-offset)
         dragging (atom false)
         start-coord (atom nil)
         mouse-up-ref (atom nil)
         handle-on-click (fn []
                           (cond
-                            (< percent 0) (on-progress 0)
-                            (< percent 25)  (on-progress 25)
-                            (< percent 50)  (on-progress 50)
-                            (< percent 75)  (on-progress 75)
-                            (< percent 100) (on-progress 100)
-                            (= percent 100) (on-progress -1)
+                            (< current-value 0) (on-progress 0)
+                            (< current-value 25)  (on-progress 25)
+                            (< current-value 50)  (on-progress 50)
+                            (< current-value 75)  (on-progress 75)
+                            (< current-value 100) (on-progress 100)
+                            (= current-value 100) (on-progress -1)
                             :else           (on-progress 0)))
 
         handle-mouse-move (e> (when @dragging
@@ -46,11 +48,31 @@
                          (reset! mouse-up-ref nil))
         handle-mouse-down (e> (reset! dragging true)
                               (reset! start-coord (-> e .-clientY))
+                              (reset! mouse-up-ref handle-mouse-up)
                               (.addEventListener js/document "mousemove" handle-mouse-move)
-                              (reset! mouse-up-ref (.addEventListener js/document "mouseup" handle-mouse-up)))]
+                              (.addEventListener js/document "mouseup" @mouse-up-ref))
+        handle-key-down (e> (let [key (.-key e)]
+                              (when (#{" " "Enter" "ArrowUp" "ArrowRight" "ArrowDown" "ArrowLeft" "Home" "End" "Delete" "Backspace"} key)
+                                (.preventDefault e)
+                                (cond
+                                  (#{" " "Enter"} key) (handle-on-click)
+                                  (#{"ArrowUp" "ArrowRight"} key) (on-progress (min 100 (+ progress 25)))
+                                  (#{"ArrowDown" "ArrowLeft"} key) (on-progress (max 0 (- progress 25)))
+                                  (= "Home" key) (on-progress 0)
+                                  (= "End" key) (on-progress 100)
+                                  (#{"Delete" "Backspace"} key) (on-progress -1)))))
+        interactive-params (when on-progress
+                             {:role :slider
+                              :tab-index 0
+                              :aria-valuemin 0
+                              :aria-valuemax 100
+                              :aria-valuenow progress
+                              :aria-valuetext (if not-applicable? "Not applicable" (str progress "%"))
+                              :on-mouse-down handle-mouse-down
+                              :on-key-down handle-key-down})]
     [:svg.Progress-indicator (merge {:viewBox (str "0 0 " size " " size)
-                                     :on-mouse-down handle-mouse-down
                                      :class (when not-applicable? :not-applicable)}
+                                    interactive-params
                                     params)
      [:defs
       [:filter#glow [:feGaussianBlur {:stdDeviation 3 :result "coloredBlur"}]
@@ -66,7 +88,7 @@
                       :stroke-dashoffset (str final-offset)}]
      [:title (if not-applicable?
                "N/A"
-               (str percent "%"))]]))
+               (str progress "%"))]]))
 
 (defn- -highlight
   "Returns a sequence of text segments based on the given `query`. Segments that
@@ -74,7 +96,8 @@
    purposes."
   [text query]
   (if (> (count query) 2)
-    (let [pattern (re-pattern (str "(?i)(" query ")"))
+    (let [escaped-query (str/replace query #"[\Q\.^$|?*+()[]{}\E]" #(str "\\" %))
+          pattern (re-pattern (str "(?i)(" escaped-query ")"))
           parts (str/split text pattern)]
       (into [:<>]
             (map (fn [segment]
@@ -99,8 +122,9 @@
 
 (defn upload-boundary [& args]
   (let [[params & body] (->params args)
-        {:keys [accept accept-types on-upload on-click]
-         :or {on-click (fn [f e] (f e))}} params
+        {:keys [accept accept-types on-upload on-click on-invalid]
+         :or {on-click (fn [f e] (f e))
+              on-invalid (fn [] (.error js/console "Files you tried to upload are not valid"))}} params
         drag-over? (reagent/atom false)
         trigger-file-dialog (fn [e] (if (= "A" e.target.tagName)
                                       (e.stopPropagation ())
@@ -116,7 +140,7 @@
                                               (doto e (.stopPropagation) (.preventDefault))
                                               (if (seq valid-files)
                                                 (on-upload files)
-                                                (.error js/console "Files you tried to upload are not valid"))
+                                                (on-invalid))
                                               (reset! drag-over? false)))
                                :on-drag-over (e> (do (doto e (.stopPropagation) (.preventDefault))
                                                      (reset! drag-over? true)))
@@ -124,7 +148,7 @@
                                                       (reset! drag-over? false)))
                                :on-click #(on-click trigger-file-dialog %)
                                :class [(when @drag-over? :drag-over)]}
-                              (dissoc params :accept :accept-types :on-upload))
+                              (dissoc params :accept :accept-types :on-upload :on-invalid))
            [:input#hidden-file-input {:type :file
                                       :name :file
                                       :style {:display :none}

@@ -238,10 +238,12 @@
 (defn- parse-link-or-image [s i image?]
   (let [label-start (+ i (if image? 2 1))
         label-end (find-close s "[" "]" label-start)]
-    (when (and label-end (< (inc label-end) (count s)) (= \( (nth s (inc label-end))))
-      (let [dest-end (find-close s "(" ")" (+ label-end 2))]
-        (when dest-end
-          (let [label (subs s label-start label-end)
+    (when label-end
+      (let [label-end ^number label-end
+            dest-end (find-close s "(" ")" (+ label-end 2))]
+        (when (and (< (inc label-end) (count s)) (= \( (nth s (inc label-end))) dest-end)
+          (let [dest-end ^number dest-end
+                label (subs s label-start label-end)
                 dest (str/trim (subs s (+ label-end 2) dest-end))
                 [_ href title] (or (re-matches #"([^ \t]+)[ \t]+\"([^\"]*)\"" dest)
                                    (re-matches #"([^ \t]+)[ \t]+'([^']*)'" dest)
@@ -253,7 +255,8 @@
 
 (defn- parse-autolink [s i]
   (when-let [end (find-close s "<" ">" (inc i))]
-    (let [body (subs s (inc i) end)]
+    (let [end ^number end
+          body (subs s (inc i) end)]
       (cond
         (re-matches #"(?i)[a-z][a-z0-9+.-]{1,31}:[^<>\s]*" body)
         {:end (inc end)
@@ -270,8 +273,9 @@
 
 (defn- parse-delimited [s i delim type]
   (when-let [end (find-close s delim delim (+ i (count delim)))]
-    {:end (+ end (count delim))
-     :node (ir/node type {} (parse-inlines (subs s (+ i (count delim)) end)))}))
+    (let [end ^number end]
+      {:end (+ end (count delim))
+       :node (ir/node type {} (parse-inlines (subs s (+ i (count delim)) end)))})))
 
 (defn parse-inlines [s]
   (let [n (count s)]
@@ -293,8 +297,9 @@
 
             (= ch \`)
             (if-let [end (find-close s "`" "`" (inc i))]
-              (recur (inc end) "" (conj (text-buffer acc buf)
-                                        {:type :inline-code :text (subs s (inc i) end)}))
+              (let [end ^number end]
+                (recur (inc end) "" (conj (text-buffer acc buf)
+                                          {:type :inline-code :text (subs s (inc i) end)})))
               (recur (inc i) (str buf ch) acc))
 
             (= two "![")

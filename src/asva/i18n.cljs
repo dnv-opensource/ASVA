@@ -109,6 +109,11 @@
     :export-assessments "Export your ASVA assessment file (JSON)"
     :import-assessments "Import a previously exported ASVA assessment file (JSON)"
     :import-associations "Import ASVS association mappings (CWE JSON or NIST Markdown)"
+    :asvs-imported "Imported ASVS with {1} requirements"
+    :associations-imported "Imported {2} {1} associations"
+    :no-associations-imported "No recognizable ASVS associations found in the selected file"
+    :asvs-status "ASVS v{1}: {2} requirements"
+    :association-status "{1}: {2}"
     :markdown-support "This textarea supports markdown formatting"
 
     :file-upload-title "Welcome to ASVA"
@@ -142,7 +147,9 @@
     :config "Config"
 
     :failed-parsing "Error parsing the ASVS file. Ensure the file is in correct JSON format and check for syntax errors."
-    :failed-reading "Error reading the ASVS file. Check if the file exists, is accessible, and is in JSON format."}
+    :failed-reading "Error reading the ASVS file. Check if the file exists, is accessible, and is in JSON format."
+    :failed-storage "Unable to save ASVA data in this browser. Check private browsing, storage permissions, or available space."
+    :invalid-file-type "The selected file type is not supported here."}
 
    :nb
    {:last-modified (fn [d] (str "Sist oppdatert " ((tongue/inst-formatter "{day}. {month-long} {year}" inst-strings-no) d)))

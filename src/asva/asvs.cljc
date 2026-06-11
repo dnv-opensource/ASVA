@@ -39,14 +39,18 @@
        :requirements
        set))
 
+(defn- level-requirement-sets [levels]
+  {:l1 (level-requirement-set levels 1)
+   :l2 (level-requirement-set levels 2)
+   :l3 (level-requirement-set levels 3)})
+
 (defn- cdx-requirement->item [levels {:keys [identifier text]}]
-  (let [level (cond
-                (contains? (level-requirement-set levels 1) identifier) 1
-                (contains? (level-requirement-set levels 2) identifier) 2
-                (contains? (level-requirement-set levels 3) identifier) 3)]
+  (let [{:keys [l1 l2 l3]} levels]
     (cond-> {:shortcode identifier
              :description text}
-      level (assoc :l level))))
+      (contains? l1 identifier) (assoc :l1 {:required true})
+      (contains? l2 identifier) (assoc :l2 {:required true})
+      (contains? l3 identifier) (assoc :l3 {:required true}))))
 
 (defn- cdx-requirement->section [{:keys [identifier title]} items]
   {:shortcode identifier
@@ -69,6 +73,7 @@
 
 (defn- normalize-cdx [asvs]
   (let [{:keys [name version description requirements levels]} (cdx-standard asvs)
+        levels (level-requirement-sets levels)
         by-parent (group-by :parent requirements)
         parentless (get by-parent nil)
         chapters (filter #(= 1 (requirement-depth %)) parentless)]
@@ -104,6 +109,15 @@
   (cond
     (cdx-format? asvs) (normalize-cdx asvs)
     :else asvs))
+
+(defn items [asvs]
+  (let [requirements (:requirements asvs)]
+    (if (some? (-> requirements first :short-name))
+      (->> requirements (mapcat :items) (mapcat :items))
+      requirements)))
+
+(defn item-count [asvs]
+  (count (items asvs)))
 
 (defn- shortcode [s]
   (when-let [identifier (some->> s str (re-seq #"\d+(?:\.\d+)+") last)]
@@ -141,6 +155,12 @@
     (map? mapping) (cwe-associations mapping)
     (string? mapping) (nist-associations mapping)
     :else {}))
+
+(defn association-type [mapping]
+  (cond
+    (map? mapping) :cwe
+    (string? mapping) :nist
+    :else :unknown))
 
 (defn merge-associations [asvs mapping]
   (let [associations (associations mapping)]

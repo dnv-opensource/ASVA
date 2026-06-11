@@ -229,6 +229,7 @@ ul li:not(:has(input)) {
     border-radius: calc(var(--border-radius) * 0.5);
     list-style: none;
     padding: 1em 1.5em;
+    pointer-events: auto;
     position: relative;
 }
 .Notification button {
@@ -259,6 +260,11 @@ ul li:not(:has(input)) {
 }
 .Progress-indicator .active {
     stroke: hsl(var(--sky-blue-hsl));
+}
+.Progress-indicator[role=slider]:focus-visible {
+    outline: 3px solid var(--risk-yellow-color);
+    outline-offset: 0.5rem;
+    border-radius: 50%;
 }
 .Progress-indicator rect {
     fill: var(--black-color);
@@ -468,11 +474,26 @@ header a:hover {
     mix-blend-mode: difference;
     display: flex;
     flex-direction: row;
+    align-items: center;
     gap: 1rem;
     position: fixed;
     top: 3rem;
     right: 3rem;
     z-index: 3;
+}
+.Import-status {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    justify-content: flex-end;
+    max-width: 50vw;
+}
+.Import-status span {
+    border: 1px solid currentColor;
+    border-radius: calc(var(--border-radius) * 0.25);
+    font-size: 1.2rem;
+    line-height: 1;
+    padding: 0.35em 0.5em;
 }
 
 .Search {
