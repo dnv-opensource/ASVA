@@ -18,23 +18,23 @@
 
 (re-frame/reg-event-fx
  :loading
-  (fn [{:keys [db]} [_ v]]
-    (let [f (if (= v :inc) inc dec)]
-      {:db (update db :loading (fnil f 0))})))
+ (fn [{:keys [db]} [_ v]]
+   (let [f (if (= v :inc) inc dec)]
+     {:db (update db :loading (fnil f 0))})))
 
 (re-frame/reg-sub :loading?
-  (fn [db _] (> (:loading db) 0)))
+                  (fn [db _] (> (:loading db) 0)))
 
 (defn header []
   (let [progress (<sub [::assessments/progress])
-		     {:keys [title description]} (<sub [::assessments/introduction])]
-	[:header
-	 [:div
-	  [progress-indicator {:width 256} progress]
-	  (when (some? title)
-            [:section.Introduction
-             [:h1.DNV title]
-             [:p.preface description]])]]))
+        {:keys [title description]} (<sub [::assessments/introduction])]
+    [:header
+     [:div
+      [progress-indicator {:width 256} progress]
+      (when (some? title)
+        [:section.Introduction
+         [:h1.DNV title]
+         [:p.preface description]])]]))
 
 (defn- search []
   (let [level-1 (<sub [::assessments/level-1])
@@ -59,64 +59,126 @@
       (for [{:keys [ordinal name short-name]} chapters]
         [:li {:key (slug :toc ordinal)}
          [:a {:title name
-              :href (str (.-host js/location) "/#" ordinal)
+              :href (str (.-origin js/location) "/#" ordinal)
               :on-click (e> (.preventDefault e)
-                          (set! (.-hash js/location) ordinal))}
+                            (set! (.-hash js/location) ordinal))}
           short-name]])]]))
 
+(defn- parse-json
+  ([text] (parse-json text true))
+  ([text warn?]
+   (try
+     (some-> text js/JSON.parse ->clj js->clj)
+     (catch :default e
+       (when warn?
+         (js/console.warn "Failed to parse JSON file:" e))
+       nil))))
+
+(defn- read-text-file [file on-load]
+  (when file
+    (re-frame/dispatch [:loading :inc])
+    (let [reader (js/FileReader.)]
+      (set! (.-onload reader) (e> (on-load (.-result target))))
+      (set! (.-onerror reader) (dispatch>e [::notifications/add (t :failed-reading)]))
+      (set! (.-onloadend reader) (dispatch>e [:loading :dec]))
+      (.readAsText reader file))))
+
 (defn- read-asvs-file [file]
-  (re-frame/dispatch [:loading :inc])
-  (let [reader (js/FileReader.)]
-    (set! (.-onload reader) (dispatch>e (if-let [asvs (-> target .-result js/JSON.parse ->clj)]
-                                          [::assessments/asvs asvs]
-                                          [::notifications/add (t :failed-parsing)])))
-    (set! (.-onerror reader) (dispatch>e [::notifications/add (t :failed-reading)]))
-    (set! (.-onloadend reader) (dispatch>e [:loading :dec]))
-    (.readAsText reader file)))
+  (read-text-file
+   file
+   #(re-frame/dispatch-sync
+     (if-let [asvs (parse-json %)]
+       [::assessments/asvs asvs]
+       [::notifications/add (t :failed-parsing)]))))
 
 (defn- read-assessments-file [file]
-  (re-frame/dispatch [:loading :inc])
-  (let [reader (js/FileReader.)]
-    (set! (.-onload reader) (dispatch>e (if-let [assessments-json (-> target .-result js/JSON.parse ->clj)]
-                                          [::assessments/assessments assessments-json]
-                                          [::notifications/add (t :failed-parsing)])))
-    (set! (.-onerror reader) (dispatch>e [::notifications/add (t :failed-reading)]))
-    (set! (.-onloadend reader) (dispatch>e [:loading :dec]))
-    (.readAsText reader file)))
+  (read-text-file
+   file
+   #(re-frame/dispatch
+     (if-let [assessments-json (parse-json %)]
+       [::assessments/assessments assessments-json]
+       [::notifications/add (t :failed-parsing)]))))
+
+(defn- read-associations-file [file]
+  (read-text-file
+   file
+   #(let [mapping (or (parse-json % false) %)]
+      (re-frame/dispatch [::assessments/associations mapping]))))
+
+(defn- download-json [filename json e]
+  (.preventDefault e)
+  (let [blob (js/Blob. #js [json] #js {"type" "application/json"})
+        url (js/URL.createObjectURL blob)
+        link (js/document.createElement "a")]
+    (set! (.-href link) url)
+    (set! (.-download link) filename)
+    (.appendChild (.-body js/document) link)
+    (.click link)
+    (.remove link)
+    (js/setTimeout #(js/URL.revokeObjectURL url) 0)))
+
+(defn- import-status []
+  (let [{:keys [asvs associations]} (<sub [::assessments/import-status])
+        cwe (get-in associations [:cwe :count])
+        nist (get-in associations [:nist :count])]
+    (when (or asvs cwe nist)
+      [:div.Import-status {:aria-live :polite}
+       (when asvs
+         [:span (t :asvs-status (:version asvs) (:items asvs))])
+       (when cwe
+         [:span (t :association-status "CWE" cwe)])
+       (when nist
+         [:span (t :association-status "NIST" nist)])])))
 
 (defn- import-export []
   (let [asvas (<sub [::assessments/assessments])
         json (-> asvas ->js js/JSON.stringify)
-        blob (js/Blob. #js [json] #js {"type" "application/json"})
-        url (js/URL.createObjectURL blob)
-        trigger-file-dialog (fn [e]
+        trigger-file-dialog (fn [id e]
                               (.preventDefault e)
-                              (.click (js/document.getElementById "hidden-file-input")))]
+                              (.click (js/document.getElementById id)))]
     [:div.Import-export
-     [:input#hidden-file-input {:type :file
-                                :name :file
-                                :style {:display :none}
-                                :accept [".json"]
-                                :on-change (e> (read-assessments-file (-> target .-files first)))}]
-     [:a {:href "/import-assessments" :on-click trigger-file-dialog :title (t :import-assessments)}
+     [import-status]
+     [:input#import-assessments-input {:type :file
+                                       :name :file
+                                       :style {:display :none}
+                                       :accept [".json"]
+                                       :on-change (e> (read-assessments-file (-> target .-files first)))}]
+     [:input#import-associations-input {:type :file
+                                        :name :file
+                                        :style {:display :none}
+                                        :accept [".json" ".md" ".markdown"]
+                                        :on-change (e> (read-associations-file (-> target .-files first)))}]
+     [:a {:href "/import-assessments"
+          :aria-label (t :import-assessments)
+          :on-click #(trigger-file-dialog "import-assessments-input" %)
+          :title (t :import-assessments)}
       [icons/upload]]
+     [:a {:href "/import-associations"
+          :aria-label (t :import-associations)
+          :on-click #(trigger-file-dialog "import-associations-input" %)
+          :title (t :import-associations)}
+      [icons/link]]
      (when (seq asvas)
-       [:a {:href url :download (str "ASVA.json") :title (t :export-assessments)}
+       [:a {:href "/export-assessments"
+            :aria-label (t :export-assessments)
+            :on-click #(download-json "ASVA.json" json %)
+            :title (t :export-assessments)}
         [icons/download]])]))
 
 (defn- app []
   [:main {:class (if (<sub [:loading?]) :loading :loaded)}
    [notifications/view]
-   (if-let [all-assessments (<sub [::assessments/items])]
+   (if (<sub [::assessments/has-asvs?])
      [:<>
       [header]
       [search]
       [table-of-contents]
       [import-export]
       [assessments/view]]
-     [upload-boundary {:accept [".json"]
-		       :accept-types #{"application/json"}
-		       :on-upload #(read-asvs-file (first %))}
+     [upload-boundary {:accept [".json" ".cdx.json"]
+                       :accept-types #{"application/json"}
+                       :on-upload #(read-asvs-file (first %))
+                       :on-invalid #(re-frame/dispatch [::notifications/add (t :invalid-file-type) :error])}
       [:div
        [:h1.title.DNV (t :file-upload-title)]
        [:p.tagline.DNV (t :file-upload-intro)]]
@@ -125,7 +187,7 @@
       [:small (t :file-upload)]
       [:footer
        [:small (t :file-upload-help)
-        [:a {:href "https://github.com/OWASP/ASVS/releases" :target "_blank"}
+        [:a {:href "https://github.com/OWASP/ASVS/releases" :target "_blank" :rel :noopener}
          (t :file-upload-download)]]]])])
 
 (defn ^:dev/after-load main []
