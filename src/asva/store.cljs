@@ -11,7 +11,8 @@
    (let [stored-value (try
                         (some-> (.getItem js/localStorage "asva")
                                 js/JSON.parse
-                                ->clj)
+                                ->clj
+                                js->clj)
                         (catch :default e
                           (js/console.warn "Failed to read ASVA local storage:" e)
                           nil))]

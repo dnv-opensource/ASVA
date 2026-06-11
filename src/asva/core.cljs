@@ -68,7 +68,7 @@
   ([text] (parse-json text true))
   ([text warn?]
    (try
-     (some-> text js/JSON.parse ->clj)
+     (some-> text js/JSON.parse ->clj js->clj)
      (catch :default e
        (when warn?
          (js/console.warn "Failed to parse JSON file:" e))

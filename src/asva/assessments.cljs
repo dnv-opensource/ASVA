@@ -75,9 +75,11 @@
                               {:asvs {:version (:version enriched-data)
                                       :items item-count
                                       :imported-at (now)}})]
-     {:db (assoc db k enriched-data)
-      :local-storage [k enriched-data]
-      :dispatch [::notifications/add (t :asvs-imported item-count) :success 4000]})))
+     (if (seq (:requirements enriched-data))
+       {:db (assoc db k enriched-data)
+        :local-storage [k enriched-data]
+        :dispatch [::notifications/add (t :asvs-imported item-count) :success 4000]}
+       {:dispatch [::notifications/add (t :failed-parsing) :error]}))))
 
 (re-frame/reg-event-fx
  ::associations
@@ -318,7 +320,7 @@
               [icons/markdown {:title (t :markdown-support)}]]
              [:button.primary {:on-click (dispatch>e (do (reset! editing? false) [::notes shortcode @note]))} "Save"]]
             (when (string? notes)
-	      [md->hiccup notes]))]
+              [md->hiccup notes]))]
          [progress-indicator {:width 40
                               :on-progress (fn [prog] (re-frame/dispatch [::progress shortcode prog]))} progress]]))))
 
